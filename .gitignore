@@ -1,0 +1,12 @@
+
+processed/
+raw/
+Bio_ClinicalBERT/
+trained_models/
+__pycache__/
+
+##----------Other----------
+# osx
+*~
+.DS_Store
+gradle.properties

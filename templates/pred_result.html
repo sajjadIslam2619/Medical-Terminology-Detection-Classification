@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+	<header>
+		<div class="container">
+		<div id="brandname">
+			NER App
+		</div>
+		<h2>Detect Clinical Entities</h2>
+
+	<li style="color: red;">treatment</li>
+	<li style="color: pink;">test</li>
+	<li style="color: blue;">problem</li>
+
+	</div>
+	</header>
+	<p style="font-size:20;text-align: center;"><b>Results for NER</b></p>
+	<div class="results">
+
+		{% for n in range(1, (all_sentences|length)) -%}
+		
+			{% set s, t = all_sentences[n], all_tags[n] %}
+			{% set flag_treatment, flag_problem, flag_test = 0, 0, 0 %}
+			{% for i in range(1, (t|length)) -%}
+				{% if t[i] == 'B-treatment' %}
+					{% set flag_treatment = 1 %}
+					<b style="color: red;">{{s[i] + ' '}}</b> 
+				{%  elif t[i] == 'I-treatment' or t[i] == 'X' and flag_treatment == 1 %}
+					<b style="color: red;">{{s[i] + ' '}}</b> 
+
+				{% elif t[i] == 'B-test' %}
+					{% set flag_test = 1 %}
+					<b style="color: pink;">{{s[i] + ' '}}</b> 
+				{%  elif t[i] == 'I-test' or t[i] == 'X' and flag_test == 1 %}
+					<b style="color: pink;">{{s[i] + ' '}}</b> 
+
+				{% elif t[i] == 'B-problem' %}
+					{% set flag_problem = 1 %}
+					<b style="color: blue;">{{s[i] + ' '}}</b> 
+				{%  elif t[i] == 'I-problem' or t[i] == 'X' and flag_problem == 1 %}
+					<b style="color: blue;">{{s[i] + ' '}}</b> 
+
+				{% elif t[i] == 'O' %}
+					{% set flag_treatment, flag_problem, flag_test = 0, 0, 0 %}
+					<b>{{s[i] + ' '}}</b> 	
+
+				{%  endif %}
+
+			{%- endfor %}
+
+		{%- endfor %}
+
+	</div>
+
+</body>
+</html>
