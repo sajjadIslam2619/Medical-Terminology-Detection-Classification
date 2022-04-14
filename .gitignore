@@ -4,6 +4,7 @@ raw/
 Bio_ClinicalBERT/
 trained_models/
 __pycache__/
+.idea/
 
 ##----------Other----------
 # osx
