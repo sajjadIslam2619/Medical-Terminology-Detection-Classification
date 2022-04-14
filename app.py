@@ -26,17 +26,17 @@ model = BertForTokenClassification.from_pretrained(save_model_address, num_label
 tokenizer = BertTokenizer.from_pretrained(save_model_address, do_lower_case=False)
 output_eval_file = "eval_results.txt"
 
-documenter = DocumentAssembler()\
-    .setInputCol("text")\
-    .setOutputCol("document")
+# documenter = DocumentAssembler()\
+#     .setInputCol("text")\
+#     .setOutputCol("document")
     
-sentencerDL = SentenceDetectorDLModel\
-    .pretrained("sentence_detector_dl", "en") \
-    .setInputCols(["document"]) \
-    .setOutputCol("sentences")
+# sentencerDL = SentenceDetectorDLModel\
+#     .pretrained("sentence_detector_dl", "en") \
+#     .setInputCols(["document"]) \
+#     .setOutputCol("sentences")
 
-sd_pipeline = PipelineModel(stages=[documenter, sentencerDL])
-sd_model = LightPipeline(sd_pipeline)
+# sd_pipeline = PipelineModel(stages=[documenter, sentencerDL])
+# sd_model = LightPipeline(sd_pipeline)
 
     
 app = Flask(__name__)
@@ -58,6 +58,7 @@ def predict():
     all_tags = []
     for anno in sd_model.fullAnnotate(message)[0]["sentences"]:
         test_query = anno.result.replace('\n','')
+        print(test_query)
         # temp_token: tokenized words
         # input_ids: convert temp_token to id
         temp_token, input_ids, attention_masks = create_query(test_query, tokenizer)
@@ -91,7 +92,7 @@ def evaluate():
     dataframe = pd.read_csv(f_path, sep="\t").astype(str)
     sentences, labels = get_sentence_label(dataframe)
     input_ids, input_tags, attention_masks = process_data(sentences, labels, tokenizer)
-    print(sentences)
+    # temp_token, _, _ = create_query(sentences, tokenizer)
     query_inputs = torch.tensor(input_ids)
     query_tags = torch.tensor(input_tags)
     query_masks = torch.tensor(attention_masks)
@@ -99,24 +100,40 @@ def evaluate():
     # Get acc , recall, F1 result report
     report = classification_report(y_true, y_pred, digits=4)
     # Save the report into file
-
+    acc = '{:.2f}'.format(accuracy_score(y_true, y_pred))
+    f1 = '{:.2f}'.format(f1_score(y_true, y_pred))
+    
     with open(output_eval_file, "w") as writer:
         print("***** Eval results *****")
         print("\n%s"%(report))
-        print("f1 socre: %f"%(f1_score(y_true, y_pred)))
-        print("Accuracy score: %f"%(accuracy_score(y_true, y_pred)))
+        print("f1 socre: ", f1)
+        print("Accuracy score: ", acc)
 
         writer.write("f1 socre:\n")
-        writer.write(str(f1_score(y_true, y_pred)))        
+        writer.write(f1)        
         writer.write("\n\nAccuracy score:\n")
-        writer.write(str(accuracy_score(y_true, y_pred)))
+        writer.write(acc)
         writer.write("\n\n")  
         writer.write(report)
+        
     print(f_name)
-    txt_to_pic(output_eval_file)
+    
+    df = classification_report_to_dataframe(report)
+
+    return render_template("eval_result.html", 
+                            file_name=os.path.basename(f_name),
+                            sentences=sentences, true_label=y_true, 
+                            pred_label=y_pred, 
+                            acc = acc, f1 = f1,
+                            column_names=df.columns.values, 
+                            row_data=list(df.values.tolist()),
+                            zip=zip
+                            )
     
     
-    return render_template("eval_result.html", sentences=sentences, true_label=y_true, pred_label=y_pred, file_name=os.path.basename(f_name))
+    # return render_template("eval_result.html", sentences=sentences, 
+    #                        true_label=y_true, pred_label=y_pred, 
+    #                        file_name=os.path.basename(f_name))
 
 if __name__ == '__main__':
 	# app.run(debug=True)

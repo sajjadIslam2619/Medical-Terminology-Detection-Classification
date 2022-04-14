@@ -2,7 +2,7 @@
 <html>
 <head>
 	<title></title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='styles.css')}}"> -->
 </head>
 <body>
 
@@ -23,60 +23,61 @@
 
 	<div class="results">
 		<h2>Predicted Entities</h2>
-
-		{% for n in range(sentences|length) -%}
-			{% set s, t = sentences[n], pred_label[n] %}
-			{% for i in range(s|length) -%}
-				{% if t[i] == 'B-treatment' %}
-					{% set flag_treatment = 1 %}
-					<b style="color: red;">{{s[i] + ' '}}</b> 
-				
-				{% elif t[i] == 'B-test' %}
-					{% set flag_test = 1 %}
-					<b style="color: pink;">{{s[i] + ' '}}</b> 
-				
-				{% elif t[i] == 'B-problem' %}
-					{% set flag_problem = 1 %}
-					<b style="color: blue;">{{s[i] + ' '}}</b> 
-
-				{% elif t[i] == 'O' %}
-					<b>{{s[i] + ' '}}</b> 	
-
+		<div class="child">
+		{% for sen, lab in zip(sentences, pred_label) -%}
+			{% for s, l in zip(sen, lab) -%}
+				{% if 'treatment' in l %}
+					<b style="color: red;">{{s + ' '}}</b> 			
+				{% elif 'test' in l %}
+					<b style="color: pink;">{{s + ' '}}</b> 			
+				{% elif 'problem' in l %}
+					<b style="color: blue;">{{s + ' '}}</b> 
+				{% else: %}
+					{{s + ' '}}
 				{%  endif %}
 			{%- endfor %}
+			<br>
 		{%- endfor %}
-
+		</div>
 	</div>
 
 	<div class="results">
 		<h2>True Entities</h2>
-
-		{% for n in range(sentences|length) -%}
-			{% set s, t = sentences[n], true_label[n] %}
-			{% for i in range(s|length) -%}
-				{% if t[i] == 'B-treatment' %}
-					{% set flag_treatment = 1 %}
-					<b style="color: red;">{{s[i] + ' '}}</b> 
-				
-				{% elif t[i] == 'B-test' %}
-					{% set flag_test = 1 %}
-					<b style="color: pink;">{{s[i] + ' '}}</b> 
-				
-				{% elif t[i] == 'B-problem' %}
-					{% set flag_problem = 1 %}
-					<b style="color: blue;">{{s[i] + ' '}}</b> 
-
-				{% elif t[i] == 'O' %}
-					<b>{{s[i] + ' '}}</b> 	
-
+		<div class="child">
+		{% for sen, lab in zip(sentences, true_label) -%}
+			{% for s, l in zip(sen, lab) -%}
+				{% if 'treatment' in l %}
+					<b style="color: red;">{{s + ' '}}</b> 				
+				{% elif 'test' in l %}
+					<b style="color: pink;">{{s + ' '}}</b> 
+				{% elif 'problem' in l %}
+					<b style="color: blue;">{{s + ' '}}</b> 
+				{% else: %}
+					{{s + ' '}}
 				{%  endif %}
 			{%- endfor %}
+			<br>
 		{%- endfor %}
-
+		</div>
 	</div>
 	<div>
-		<h2> </h2>
-		<img src="{{url_for('static', filename='results.png')}}" />
+		<h2>Metrics </h2>
+		<p>Accuracy: {{acc}}</p>
+		<p>F1: {{f1}}</p>
+		<table style="width:30%">
+			<tr>
+				{% for col in column_names %}
+				<th>{{col}}</th>
+				{% endfor %}
+			</tr>
+			{% for row in row_data %}
+			<tr>
+				{% for row_ in row %}
+				<td>{{row_}}</td>
+				{% endfor %}
+			</tr>
+			{% endfor %}
+		</table>
 	</div>
 	
 </body>

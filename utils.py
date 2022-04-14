@@ -38,7 +38,7 @@ def model_evaluation(input_ids, label_ids, input_mask, model):
     # Compare the valuable predict result
     for i, mask in enumerate(input_mask):
         # Real one
-        temp_1 = []
+        temp_1 = [] 
         # Predict one
         temp_2 = []
         for j, m in enumerate(mask):
@@ -112,3 +112,23 @@ def txt_to_pic(txt_path):
                 transform=IdentityTransform())
         
     plt.savefig("static/results.png")
+    
+    
+def classification_report_to_dataframe(str_representation_of_report):
+    split_string = [x.split(' ') for x in str_representation_of_report.split('\n')]
+    column_names = [' ']+[x for x in split_string[0] if x!='']
+    values = []
+    for table_row in split_string[1:-1]:
+        table_row = [value for value in table_row if value!='']
+        if table_row!=[]:
+            values.append(table_row)
+    for i in values:
+        for j in range(len(i)):
+            if i[1] == 'avg':
+                i[0:2] = [''.join(i[0:2])]
+            if len(i) == 3:
+                i.insert(1, np.nan)
+                i.insert(2, np.nan)
+            else:
+                pass
+    return pd.DataFrame(data=values, columns=column_names)

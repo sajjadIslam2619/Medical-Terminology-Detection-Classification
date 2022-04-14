@@ -22,7 +22,7 @@
 	<p style="font-size:20;text-align: center;"><b>Results for NER</b></p>
 	<div class="results">
 
-		{% for n in range(1, (all_sentences|length)) -%}
+		{% for n in range(0, (all_sentences|length)) -%}
 		
 			{% set s, t = all_sentences[n], all_tags[n] %}
 			{% set flag_treatment, flag_problem, flag_test = 0, 0, 0 %}
@@ -47,7 +47,7 @@
 
 				{% elif t[i] == 'O' %}
 					{% set flag_treatment, flag_problem, flag_test = 0, 0, 0 %}
-					<b>{{s[i] + ' '}}</b> 	
+					{{s[i] + ' '}}	
 
 				{%  endif %}
 
