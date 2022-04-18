@@ -1,0 +1,16 @@
+f1 socre:
+0.85
+
+Accuracy score:
+0.95
+
+              precision    recall  f1-score   support
+
+           _     0.0000    0.0000    0.0000         0
+     problem     0.8704    0.7833    0.8246        60
+        test     0.8644    0.7846    0.8226        65
+   treatment     0.8923    0.9206    0.9062        63
+
+   micro avg     0.8715    0.8298    0.8501       188
+   macro avg     0.6568    0.6221    0.6383       188
+weighted avg     0.8757    0.8298    0.8513       188

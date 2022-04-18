@@ -5,12 +5,11 @@ from werkzeug.utils import secure_filename
 
 from processor import *
 
-import stanza
-try:
-    nlp = stanza.Pipeline(lang='en', processors='tokenize')
-except:
-    stanza.download('en')
-    nlp = stanza.Pipeline(lang='en', processors='tokenize')
+from sparknlp.annotator import *
+from sparknlp.base import *
+import sparknlp
+
+park = sparknlp.start(spark32=True)
 
 from transformers import BertForTokenClassification, BertTokenizer
 
@@ -22,6 +21,18 @@ output_eval_file = "eval_results.txt"
 
 UPLOAD_FOLDER = '.'
 ALLOWED_EXTENSIONS = {'txt'}
+
+documenter = DocumentAssembler() \
+    .setInputCol("text") \
+    .setOutputCol("document")
+
+sentencerDL = SentenceDetectorDLModel \
+    .pretrained("sentence_detector_dl", "en") \
+    .setInputCols(["document"]) \
+    .setOutputCol("sentences")
+
+sd_pipeline = PipelineModel(stages=[documenter, sentencerDL])
+sd_model = LightPipeline(sd_pipeline)
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -35,11 +46,12 @@ def allowed_file(filename):
 def predict_long_text(long_text):
     all_sentences = []
     all_tags = []
-    doc = nlp(long_text)
-    for i, sentence in enumerate(doc.sentences):
+    for anno in sd_model.fullAnnotate(long_text)[0]["sentences"]:
+        test_query = anno.result.replace('\n', '')
+        print(test_query)
         # temp_token: tokenized words
         # input_ids: convert temp_token to id
-        temp_token, input_ids, attention_masks = create_query(sentence, tokenizer)
+        temp_token, input_ids, attention_masks = create_query(test_query, tokenizer)
         result_list = model_inference(model, input_ids)
         result = [tag2name[t] for t in result_list]
         pretok_sent = ""
@@ -52,8 +64,10 @@ def predict_long_text(long_text):
                 pretags += " " + result[i]
         pretok_sent = pretok_sent[1:]
         pretags = pretags[1:]
+
         s = pretok_sent.split()
         t = pretags.split()
+
         all_sentences.append(s)
         all_tags.append(t)
     return all_sentences, all_tags

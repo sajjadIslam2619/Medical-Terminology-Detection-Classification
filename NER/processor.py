@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import torch
 
 import config
@@ -55,8 +54,8 @@ def process_data(sentences, labels, tokenizer):
         
         # Add [CLS] and [SEP], 
         # Truncate seq if it is too long
-        text = ['[CLS]'] + text[:config.MAX_LEN-2] + ['[SEP]']
-        label = ['[CLS]'] + label[:config.MAX_LEN-2] + ['[SEP]']
+        text = ['[CLS]'] + text[:config.MAX_LEN - 2] + ['[SEP]']
+        label = ['[CLS]'] + label[:config.MAX_LEN - 2] + ['[SEP]']
 
         # convert to ids
         ids = tokenizer.convert_tokens_to_ids(text)
@@ -80,13 +79,13 @@ def process_data(sentences, labels, tokenizer):
 
 # input a whole sentence as a string
 # like 'He was admitted , taken to the operating room where he underwent L5-S1 right hemilaminectomy and discectomy .'
-def create_query(test_query, tokenizer):
-    
-    tokenized_texts = []
+def create_query(sentence, tokenizer):
+
     temp_token = ['[CLS]']
-    token_list = tokenizer.tokenize(test_query)
-    temp_token.extend(token_list)
-    temp_token = temp_token[:config.MAX_LEN-1]
+    word_list = [token.text for token in sentence.tokens]
+    for word in word_list:
+        temp_token.extend(tokenizer.tokenize(word))
+    temp_token = temp_token[:64 - 1]
     temp_token.append('[SEP]')
     input_id = tokenizer.convert_tokens_to_ids(temp_token)
     padding_len = config.MAX_LEN - len(input_id)

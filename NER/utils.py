@@ -1,6 +1,4 @@
-import pandas as pd
 import numpy as np
-import os
 
 from io import BytesIO
 from matplotlib.figure import Figure
@@ -8,14 +6,9 @@ import matplotlib.pyplot as plt
 from matplotlib.transforms import IdentityTransform
 
 from scipy.special import softmax
-from seqeval.metrics import classification_report, accuracy_score, f1_score
 
-import torch
 import torch.nn.functional as F
-from torch.utils.data import TensorDataset, DataLoader
-from transformers import BertForTokenClassification, BertTokenizer
 
-import processor
 from processor import *
 
 

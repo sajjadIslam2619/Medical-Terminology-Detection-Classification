@@ -1,8 +1,8 @@
-import os, re, pickle
+import os, re
 import numpy as np
 import pandas as pd
-import json
-import config
+from utils import config
+
 np.random.seed(1)
 
 
@@ -197,7 +197,7 @@ def main():
     # save_to_csv(merged_test_txt, config.OUT_FILES['merged_test'])
     
     for record_id, text in reprocessed_texts['test'].items():
-        save_path = os.path.join(config.INDIVIDUAL_TEST, record_id+'.tsv')
+        save_path = os.path.join(config.INDIVIDUAL_TEST, record_id + '.tsv')
         save_to_csv(text, save_path)
     
     # with open(config.OUT_FILES['label'], 'w') as f: f.write('\n'.join(list(label_vocab.keys())))

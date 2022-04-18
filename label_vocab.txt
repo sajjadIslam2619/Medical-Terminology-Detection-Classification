@@ -1,7 +1,0 @@
-O
-B-test
-I-test
-B-treatment
-I-treatment
-B-problem
-I-problem

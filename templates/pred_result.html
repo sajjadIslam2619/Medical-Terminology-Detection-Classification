@@ -45,7 +45,7 @@
 				{%  elif t[i] == 'I-problem' or t[i] == 'X' and flag_problem == 1 %}
 					<b style="color: blue;">{{s[i] + ' '}}</b> 
 
-				{% elif t[i] == 'O' %}
+				{% elif t[i] == 'O' or t[i] == 'X' %}
 					{% set flag_treatment, flag_problem, flag_test = 0, 0, 0 %}
 					{{s[i] + ' '}}	
 
