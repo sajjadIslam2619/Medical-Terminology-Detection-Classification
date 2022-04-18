@@ -9,7 +9,7 @@ from scipy.special import softmax
 
 import torch.nn.functional as F
 
-from processor import *
+from NER.processor import *
 
 
 def model_evaluation(input_ids, label_ids, input_mask, model):

@@ -1,14 +1,18 @@
 from flask import Flask, render_template, request, flash
-
+import os
 import random
 from werkzeug.utils import secure_filename
 
-from processor import *
+from NER.processor import *
+from NER.utils import *
 
+from utils import config
+
+from seqeval.metrics import classification_report,accuracy_score,f1_score
 import stanza
 try:
     nlp = stanza.Pipeline(lang='en', processors='tokenize')
-except:
+except Exception:
     stanza.download('en')
     nlp = stanza.Pipeline(lang='en', processors='tokenize')
 
@@ -48,8 +52,8 @@ def predict_long_text(long_text):
             if tok.startswith("##"):
                 pretok_sent += tok[2:]
             else:
-                pretok_sent += " " + tok
-                pretags += " " + result[i]
+                pretok_sent += f" {tok}"
+                pretags += f" {result[i]}"
         pretok_sent = pretok_sent[1:]
         pretags = pretags[1:]
         s = pretok_sent.split()

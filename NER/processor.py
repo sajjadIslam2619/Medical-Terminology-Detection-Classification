@@ -1,7 +1,7 @@
 import pandas as pd
 import torch
 
-import config
+from utils import config
 
 tag2idx={'B-problem': 0,
         'B-test': 1,
