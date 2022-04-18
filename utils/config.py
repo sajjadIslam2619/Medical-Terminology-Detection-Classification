@@ -10,7 +10,7 @@ FULL_FINETUNING = True # True: fine tuning all the layers  False: only fine tuni
 LEARNING_RATE = 3e-5
 MODEL_NAME = 'Bio_ClinicalBERT'
 MODEL_ADDRESS = 'emilyalsentzer/Bio_ClinicalBERT'
-MODEL_SAVED_DIR = './trained_models'
+NER_MODEL_SAVED_DIR = './trained_models/NER'
 
 RAW_TRAIN_DIRS = {
     'beth': './Data/raw/concept_assertion_relation_training_data/beth',

@@ -19,7 +19,7 @@ except Exception:
 from transformers import BertForTokenClassification, BertTokenizer
 
 num_labels = len(tag2idx)
-save_model_address = './trained_models/C-Bert-test'
+save_model_address = './trained_models/NER/C-Bert-test'
 model = BertForTokenClassification.from_pretrained(save_model_address, num_labels=num_labels)
 tokenizer = BertTokenizer.from_pretrained(save_model_address, do_lower_case=False)
 output_eval_file = "Results/eval_results.txt"
