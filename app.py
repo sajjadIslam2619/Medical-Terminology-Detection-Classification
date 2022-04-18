@@ -4,7 +4,7 @@ import random
 from werkzeug.utils import secure_filename
 
 from NER.processor import *
-from NER.utils import *
+from NER.ner_utils import *
 
 from utils import config
 

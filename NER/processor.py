@@ -98,7 +98,7 @@ def create_query(sentence, tokenizer):
 
 def main():
     
-    data_path_train = "./processed/merged/train.tsv" 
+    data_path_train = "./Data/processed/merged/train.tsv"
     train_data = pd.read_csv(data_path_train, sep="\t").astype(str)
     s, l = get_sentence_label(train_data)
     
