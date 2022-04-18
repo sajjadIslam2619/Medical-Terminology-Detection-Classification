@@ -22,7 +22,7 @@ num_labels = len(tag2idx)
 save_model_address = './trained_models/C-Bert-test'
 model = BertForTokenClassification.from_pretrained(save_model_address, num_labels=num_labels)
 tokenizer = BertTokenizer.from_pretrained(save_model_address, do_lower_case=False)
-output_eval_file = "eval_results.txt"
+output_eval_file = "Results/eval_results.txt"
 
 UPLOAD_FOLDER = '.'
 ALLOWED_EXTENSIONS = {'txt'}
