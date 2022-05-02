@@ -1,3 +1,6 @@
+# NER
+
+
 import os
 import subprocess
 import torch
@@ -44,8 +47,8 @@ if not os.path.exists(DATA_SAVED_DIR):
     os.makedirs(DATA_SAVED_DIR)
 if not os.path.exists(INDIVIDUAL_TEST):
     os.makedirs(INDIVIDUAL_TEST)
-if not os.path.exists(MODEL_SAVED_DIR):
-    os.makedirs(MODEL_SAVED_DIR)
+if not os.path.exists(NER_MODEL_SAVED_DIR):
+    os.makedirs(NER_MODEL_SAVED_DIR)
 if not os.path.exists(MODEL_NAME):
     subprocess.Popen(['git', 'clone', 'https://huggingface.co/'+MODEL_ADDRESS])
 
@@ -53,8 +56,8 @@ if not os.path.exists(MODEL_NAME):
 def main():
     print('debug code')
     print(device)
-    if not os.path.exists(MODEL_SAVED_DIR):
-        os.makedirs(MODEL_SAVED_DIR)
+    if not os.path.exists(NER_MODEL_SAVED_DIR):
+        os.makedirs(NER_MODEL_SAVED_DIR)
     # with open(OUT_FILES['label']) as f: l = [i.strip('\n') for i in f.readlines()]
     # print(l)
     
