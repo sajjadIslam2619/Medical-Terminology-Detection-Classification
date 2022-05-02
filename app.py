@@ -5,8 +5,7 @@ from werkzeug.utils import secure_filename
 
 from NER.processor import *
 from NER.ner_utils import *
-
-from utils import config
+from NER import config
 
 from seqeval.metrics import classification_report,accuracy_score,f1_score
 import stanza
