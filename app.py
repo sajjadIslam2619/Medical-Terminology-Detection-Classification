@@ -19,9 +19,10 @@ from transformers import BertForTokenClassification, BertTokenizer
 
 num_labels = len(tag2idx)
 save_model_address = './trained_models/NER/C-Bert-test'
-model = BertForTokenClassification.from_pretrained(save_model_address, num_labels=num_labels)
-tokenizer = BertTokenizer.from_pretrained(save_model_address, do_lower_case=False)
+model_ner = BertForTokenClassification.from_pretrained(save_model_address, num_labels=num_labels)
+tokenizer_ner = BertTokenizer.from_pretrained(save_model_address, do_lower_case=False)
 output_eval_file = "Results/eval_results.txt"
+
 
 UPLOAD_FOLDER = '.'
 ALLOWED_EXTENSIONS = {'txt'}
@@ -42,8 +43,8 @@ def predict_long_text(long_text):
     for i, sentence in enumerate(doc.sentences):
         # temp_token: tokenized words
         # input_ids: convert temp_token to id
-        temp_token, input_ids, attention_masks = create_query(sentence, tokenizer)
-        result_list = model_inference(model, input_ids)
+        temp_token, input_ids, attention_masks = create_query(sentence, tokenizer_ner)
+        result_list = model_inference(model_ner, input_ids)
         result = [tag2name[t] for t in result_list]
         pretok_sent = ""
         pretags = ""
