@@ -7,7 +7,7 @@ print("Using ", device)
 
 def assertion_input_creator(sentences, tokenizer, add_special_tokens=True):
     input_ids = []
-    attention_masks = []
+    attention_mask = []
     # For every sentence...
     for sent in sentences:
         encoded_dict = tokenizer.encode_plus(
@@ -19,7 +19,7 @@ def assertion_input_creator(sentences, tokenizer, add_special_tokens=True):
             return_tensors='pt',     # Return pytorch tensors.
         )
         input_ids.append(encoded_dict['input_ids'])
-        attention_masks.append(encoded_dict['attention_mask'])
+        attention_mask.append(encoded_dict['attention_mask'])
 
     # Convert the lists into tensors.
     input_ids = torch.cat(input_ids, dim=0)
@@ -42,4 +42,15 @@ def assertion_model_inference(model, input_ids, attention_mask):
     logits = logits.detach().cpu().numpy()
     predictions.append(logits)
 
-    return np.argmax(logits, axis=1).flatten()
+    pred_labels_i = np.argmax(logits, axis=1).flatten()
+
+    def index2label(x):
+        if x == 0:
+            return 'Present'
+        elif x == 1:
+            return 'Possible'
+        elif x == 2:
+            return 'Not-present'
+
+    pred_labels = map(index2label, pred_labels_i)
+    return list(pred_labels)

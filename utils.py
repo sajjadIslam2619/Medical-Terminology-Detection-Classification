@@ -98,4 +98,3 @@ def entity_extractor(all_sentences, all_tags):
             all_problems_in_text.append(problem_index)
 
     return sentences_with_problem, all_problems_in_text, all_treatment_in_text, all_test_in_text
-# predict assertion

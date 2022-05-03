@@ -13,46 +13,54 @@
 		</div>
 		<h2>Detect Clinical Entities</h2>
 
-	<li style="color: red;">treatment</li>
-	<li style="color: pink;">test</li>
-	<li style="color: blue;">problem</li>
+	<li style="color: #ff4000eb;">problem(PRESENT)</li>
+	<li style="color: #3AE43F;">problem(NOT-PRESENT)</li>
+	<li style="color: #c9c60b;">problem(POSSIBLE)</li>
+	<li style="color: #d988dd;">test</li>
+	<li style="color: blue;">treatment</li>
 
 	</div>
 	</header>
 	<p style="font-size:20;text-align: center;"><b>Results for NER</b></p>
 	<div class="results">
 
-		{% for n in range(0, (all_sentences|length)) -%}
-		
-			{% set s, t = all_sentences[n], all_tags[n] %}
-			{% set flag_treatment, flag_problem, flag_test = 0, 0, 0 %}
-			{% for i in range(1, (t|length)) -%}
-				{% if t[i] == 'B-treatment' %}
-					{% set flag_treatment = 1 %}
-					<b style="color: red;">{{s[i] + ' '}}</b> 
-				{%  elif t[i] == 'I-treatment' or t[i] == 'X' and flag_treatment == 1 %}
-					<b style="color: red;">{{s[i] + ' '}}</b> 
+		{% for index_sentence in range(all_sentences|length) -%}
 
-				{% elif t[i] == 'B-test' %}
-					{% set flag_test = 1 %}
-					<b style="color: pink;">{{s[i] + ' '}}</b> 
-				{%  elif t[i] == 'I-test' or t[i] == 'X' and flag_test == 1 %}
-					<b style="color: pink;">{{s[i] + ' '}}</b> 
+			{% set sentence = all_sentences[index_sentence] %}
+			{% set pred_assertion = assertion_in_sentence[index_sentence] %}
+			{% set assertion_index = all_problems_in_text[index_sentence] %}
+			{% set treatment_index = all_treatment_in_text[index_sentence] %}
+			{% set test_index = all_test_in_text[index_sentence] %}
+			{% set flag_problem = '' %}
+			{% for i in range(1, (sentence|length)-1) -%} 
 
-				{% elif t[i] == 'B-problem' %}
-					{% set flag_problem = 1 %}
-					<b style="color: blue;">{{s[i] + ' '}}</b> 
-				{%  elif t[i] == 'I-problem' or t[i] == 'X' and flag_problem == 1 %}
-					<b style="color: blue;">{{s[i] + ' '}}</b> 
+				{% if i in assertion_index %}
+					{% set index = assertion_index.index(i) %}
+					{% if pred_assertion[index] == 'Present' %}
+					<!-- + '(PRESENT) ' -->
+						<b style="color: #ff4000eb;">{{sentence[i]}}</b> 
+					{% elif pred_assertion[index] == 'Possible' %}
+					<!-- + '(Possible) ' -->
+						<b style="color: #c9c60b;">{{sentence[i]}}</b> 
+					{% elif pred_assertion[index] == 'Not-present' %}
+					<!-- + '(Not-present) ' -->
+						<b style="color: #3AE43F;">{{sentence[i]}}</b> 
+					{%  endif %}
 
-				{% elif t[i] == 'O' or t[i] == 'X' %}
-					{% set flag_treatment, flag_problem, flag_test = 0, 0, 0 %}
-					{{s[i] + ' '}}	
+				{% elif i in test_index %}
+					<b style="color: #d988dd;">{{sentence[i] + ' '}}</b> 
+
+				{% elif i in treatment_index %}
+					<b style="color: blue;">{{sentence[i] + ' '}}</b> 
+
+				{% else %}
+					{{sentence[i] + ' '}}	
 
 				{%  endif %}
 
-			{%- endfor %}
+				
 
+			{%- endfor %}
 		{%- endfor %}
 
 	</div>
