@@ -5,7 +5,8 @@ Bio_ClinicalBERT/
 trained_models/
 __pycache__/
 .idea/
-
+Examples/
+requirements00.txt
 ## files
 
 ##----------Other----------

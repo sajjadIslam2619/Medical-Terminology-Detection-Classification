@@ -11,10 +11,18 @@ import torch.nn.functional as F
 
 from NER.processor import *
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Using ", device)
 
 def model_evaluation(input_ids, label_ids, input_mask, model):
     y_true = []
     y_pred = []
+    
+    model.to(device)
+    input_ids = input_ids.to(device)
+    label_ids = label_ids.to(device)
+    input_mask = input_mask.to(device)
+    
     model.eval()
     with torch.no_grad():
         outputs = model(input_ids, token_type_ids=None,
@@ -50,6 +58,8 @@ def model_evaluation(input_ids, label_ids, input_mask, model):
 
 
 def model_inference(model, input_ids):
+    model.to(device)
+    input_ids = input_ids.to(device)
     model.eval()
     with torch.no_grad():
         outputs = model(input_ids, token_type_ids=None,
