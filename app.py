@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from NER.processor import *
 from NER.ner_utils import *
 from NER import config
-
+from utils import *
 from seqeval.metrics import classification_report,accuracy_score,f1_score
 import stanza
 try:
@@ -17,12 +17,9 @@ except Exception:
 
 from transformers import BertForTokenClassification, BertTokenizer
 
-num_labels = len(tag2idx)
-save_model_address = './trained_models/NER/C-Bert-test'
-model_ner = BertForTokenClassification.from_pretrained(save_model_address, num_labels=num_labels)
-tokenizer_ner = BertTokenizer.from_pretrained(save_model_address, do_lower_case=False)
+model_ner, tokenizer_ner = load_ner_model()
+model_assertion, tokenizer_assertion = load_assertion_model()
 output_eval_file = "Results/eval_results.txt"
-
 
 UPLOAD_FOLDER = '.'
 ALLOWED_EXTENSIONS = {'txt'}
@@ -35,7 +32,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
+# predict entity
 def predict_long_text(long_text):
     all_sentences = []
     all_tags = []
@@ -61,6 +58,10 @@ def predict_long_text(long_text):
         all_sentences.append(s)
         all_tags.append(t)
     return all_sentences, all_tags
+
+# extract assertion 
+
+# predict assertion
 
 
 @app.route('/')
@@ -110,12 +111,12 @@ def evaluate():
     f_path = os.path.join(config.INDIVIDUAL_TEST, f_name)
     dataframe = pd.read_csv(f_path, sep="\t").astype(str)
     sentences, labels = get_sentence_label(dataframe)
-    input_ids, input_tags, attention_masks = process_data(sentences, labels, tokenizer)
+    input_ids, input_tags, attention_masks = process_data(sentences, labels, tokenizer_ner)
     # temp_token, _, _ = create_query(sentences, tokenizer)
     query_inputs = torch.tensor(input_ids)
     query_tags = torch.tensor(input_tags)
     query_masks = torch.tensor(attention_masks)
-    y_true, y_pred = model_evaluation(query_inputs, query_tags, query_masks, model)
+    y_true, y_pred = model_evaluation(query_inputs, query_tags, query_masks, model_ner)
     # Get acc , recall, F1 result report
     report = classification_report(y_true, y_pred, digits=4)
     # Save the report into file
