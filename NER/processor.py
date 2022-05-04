@@ -1,7 +1,6 @@
 import pandas as pd
 import torch
-
-from utils import config
+import NER.config as config
 
 tag2idx={'B-problem': 0,
         'B-test': 1,
