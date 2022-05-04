@@ -23,9 +23,9 @@ from transformers import BertForTokenClassification, BertTokenizer
 
 model_ner, tokenizer_ner = load_ner_model()
 model_assertion, tokenizer_assertion = load_assertion_model()
-output_eval_file = "Results/eval_results.txt"
+output_eval_file = "./Results/eval_results.txt"
 
-UPLOAD_FOLDER = '.'
+UPLOAD_FOLDER = './Results'
 ALLOWED_EXTENSIONS = {'txt'}
 
 app = Flask(__name__)
@@ -35,8 +35,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# predict entity
 
 
 def predict_entities(long_text):
@@ -66,11 +64,13 @@ def predict_entities(long_text):
         all_tags.append(t)
     return all_sentences, all_tags
 
-# extract index of entity
-# extract sentence with assertion
 
 
 def predict_assertion(all_sentences, all_tags):
+    
+    # extract index of entity
+    # extract sentence with assertion
+
     sentences_with_problem, \
         all_problems_in_text, \
         all_treatment_in_text, \
@@ -136,7 +136,7 @@ def predict_file():
         all_test_in_text = predict_assertion(all_sentences, all_tags)
         
     return render_template("pred_result.html", all_sentences=all_sentences,
-                           labels_in_sentence=assertion_in_sentence,
+                           assertion_in_sentence=assertion_in_sentence,
                            all_problems_in_text=all_problems_in_text_flatten,
                            all_treatment_in_text=all_treatment_in_text,
                            all_test_in_text=all_test_in_text,
