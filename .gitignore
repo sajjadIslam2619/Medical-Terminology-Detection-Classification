@@ -6,6 +6,7 @@ trained_models/
 __pycache__/
 .idea/
 Examples/
+Results/
 requirements00.txt
 ## files
 
