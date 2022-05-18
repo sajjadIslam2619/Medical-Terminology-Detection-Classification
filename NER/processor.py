@@ -81,8 +81,8 @@ def process_data(sentences, labels, tokenizer):
 def create_query(sentence, tokenizer):
 
     temp_token = ['[CLS]']
-    word_list = [token.text for token in sentence.tokens]
-    for word in word_list:
+    # word_list = [token.text for token in sentence.tokens]
+    for word in sentence:
         temp_token.extend(tokenizer.tokenize(word))
     temp_token = temp_token[:64 - 1]
     temp_token.append('[SEP]')

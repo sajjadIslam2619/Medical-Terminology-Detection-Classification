@@ -19,8 +19,6 @@ except Exception:
     stanza.download('en')
     nlp = stanza.Pipeline(lang='en', processors='tokenize')
 
-from transformers import BertForTokenClassification, BertTokenizer
-
 model_ner, tokenizer_ner = load_ner_model()
 model_assertion, tokenizer_assertion = load_assertion_model()
 output_eval_file = "./Results/eval_results.txt"
@@ -44,8 +42,9 @@ def predict_entities(long_text):
     for i, sentence in enumerate(doc.sentences):
         # temp_token: tokenized words
         # input_ids: convert temp_token to id
+        word_list = [token.text for token in sentence.tokens]
         temp_token, input_ids, attention_masks = create_query(
-            sentence, tokenizer_ner)
+            word_list, tokenizer_ner)
         result_list = model_inference(model_ner, input_ids)
         result = [tag2name[t] for t in result_list]
         pretok_sent = ""
