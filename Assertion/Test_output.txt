@@ -1,0 +1,70 @@
+The differential diagnosis included [entity] viral pneumonitis [entity] , Mycoplasma , Chlamydia .
+Possible
+The differential diagnosis included viral pneumonitis , [entity] Mycoplasma [entity] , Chlamydia .
+Possible
+The differential diagnosis included viral pneumonitis , Mycoplasma , [entity] Chlamydia [entity] .
+Possible
+Medications , [entity] metabolic disturbances [entity] , and infection are among the most common causes .
+Present
+Medications , metabolic disturbances , and [entity] infection [entity] are among the most common causes .
+Present
+2. Respiratory failure unclear etiology , presumed secondary to possible pneumonia , questionable [entity] lymphangitic spread [entity] .
+Possible
+2. Respiratory failure unclear etiology , presumed secondary to possible [entity] pneumonia [entity] , questionable lymphangitic spread .
+Possible
+2. [entity] Respiratory failure [entity] unclear etiology , presumed secondary to possible pneumonia , questionable lymphangitic spread .
+Present
+CTA was performed which was negative for PE , but revealed bilateral patchy ground glass opacities c/w aspiration vs. [entity] pneumonia [entity] vs. edema .
+Possible
+CTA was performed which was negative for PE , but revealed bilateral patchy ground glass opacities c/w aspiration vs. pneumonia vs. [entity] edema [entity] .
+Possible
+CTA was performed which was negative for PE , but revealed bilateral patchy ground glass opacities c/w [entity] aspiration [entity] vs. pneumonia vs. edema .
+Possible
+CTA was performed which was negative for PE , but revealed bilateral patchy ground glass opacities c/w aspiration vs. pneumonia vs. [entity] edema [entity] .
+Possible
+CTA was performed which was negative for PE , but revealed [entity] bilateral patchy ground glass opacities [entity] c/w aspiration vs. pneumonia vs. edema .
+Present
+CTA was performed which was negative for [entity] PE [entity] , but revealed bilateral patchy ground glass opacities c/w aspiration vs. pneumonia vs. edema .
+Not-present
+A CT of her head demonstrated intraparenchymal and extraaxial blood ( mostly subarachnoid ) in bilateral cerebral hemispheres , right greater than left , in a pattern indicating [entity] contrecoup injury [entity] .
+Possible
+A CT of her head demonstrated [entity] intraparenchymal and extraaxial blood ( mostly subarachnoid ) in bilateral cerebral hemispheres [entity] , right greater than left , in a pattern indicating contrecoup injury .
+Present
+MRI of the head demonstrated a small vessel disease and was likely [entity] an old right cerebellar infarct [entity] .
+Possible
+The question was whether or not whether she had two primaries vs [entity] metastatic endometrial cancer [entity] .
+Possible
+ID was consulted for both the abd abcess and possible [entity] meningitis [entity] given the large amount of wbc in the csf cultures .
+Possible
+11. Question of [entity] transient ischemic attack [entity] .
+Possible
+[entity] Subarachnoid hemorrhage [entity] is another possible explanation .
+Possible
+It was thought that it could have been a combination of hypotension , [entity] hypercapnia [entity] and infection .
+Present
+Followed her sats likely due to obstructive-sleep apnea and [entity] hypoventilation [entity] .
+Present
+Chest x-ray showed a question of [entity] left lung opacity [entity] .
+Possible
+records from that hospitalization indicate she may have only had [entity] a very mild injury [entity] ) and has been managed on dilantin and keppra .
+Present
+POTENTIALLY [entity] SERIOUS INTERACTION [entity] :
+Present
+The physiology at the time of transfer to the Medical Intensive Care Unit was consistent with [entity] a septic process [entity] .
+Present
+Results of the catheterization indicated the patient had [entity] three vessel disease [entity] and was a candidate for coronary artery bypass graft .
+Present
+The patient was treated empirically with Nafcillin and Ceftriaxone for [entity] meningitis [entity] and sinusitis .
+Present
+A CT would help for further assessment and exclude [entity] proteinaceous material within the sulci [entity] .
+Possible
+Electrolytes were within normal limits , liver function tests within normal limits , and EKG showed a heart rate of 128 , axis 73 , and possible [entity] ectopic P [entity] .
+Possible
+Renal tubular acidosis distal type I ; shock ; seizure disorder ; severe acidosis and severe electrolyte imbalance ; rule out [entity] sepsis [entity] .
+Possible
+Following intervention right heart catheterization was performed to rule out [entity] RV infarct [entity] .
+Possible
+[entity] cystic duct obstruction [entity] .
+Present
+[entity] DM [entity] , sp L ax-bifem , L fem-CMED , ERCP '04 , T+A , Appy , CEA , L4-L5 laminectomy .
+Present
