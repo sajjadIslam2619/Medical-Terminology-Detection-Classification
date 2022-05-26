@@ -4,6 +4,10 @@ import numpy as np
 from util import config
 
 
+'''
+Read data from 'raw' files and chanage traning, test data format into desired format (sentence label).  
+'''
+
 def save_to_csv(lines, save_path):
     file = open(save_path, 'w')
     header_line = 'sentence' + '\t' + 'label' + '\n\n'
