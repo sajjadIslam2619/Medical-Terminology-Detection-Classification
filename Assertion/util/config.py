@@ -61,6 +61,12 @@ OUT_FILES = {
                                                     'assertion_5_label_modified_dev.tsv'),
     'assertion_5_label_modified_test': os.path.join(DATA_REFORMAT_AST_LABEL_SAVED_DIR,
                                                     'assertion_5_label_modified_test.tsv'),
+    'assertion_6_label_modified_train': os.path.join(DATA_REFORMAT_AST_LABEL_SAVED_DIR, 
+                                                    'assertion_6_label_modified_train.tsv'),
+    'assertion_6_label_modified_dev': os.path.join(DATA_REFORMAT_AST_LABEL_SAVED_DIR, 
+                                                    'assertion_6_label_modified_dev.tsv'),
+    'assertion_6_label_modified_test': os.path.join(DATA_REFORMAT_AST_LABEL_SAVED_DIR,
+                                                    'assertion_6_label_modified_test.tsv'),
     'label_assertion': '../label_vocab_assertion.txt',
     'label_ast': '../label_vocab_ast.txt'
 }
