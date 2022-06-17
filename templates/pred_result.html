@@ -14,8 +14,11 @@
 		<h2>Detect Clinical Entities</h2>
 
 	<li style="color: #ff4000eb;">problem(PRESENT)</li>
-	<li style="color: #3AE43F;">problem(NOT-PRESENT)</li>
+	<li style="color: #3AE43F;">problem(ABSENT)</li>
 	<li style="color: #c9c60b;">problem(POSSIBLE)</li>
+	<li style="color: #984a30eb;">problem(CONDITIONAL)</li>
+	<li style="color: #234e25;">problem(HYPHOTHETICAL)</li>
+	<li style="color: #898726;">problem(ASSOCIATED WITH SOMEONE ELSE)</li>
 	<li style="color: #d988dd;">test</li>
 	<li style="color: blue;">treatment</li>
 
@@ -42,8 +45,17 @@
 					{% elif pred_assertion[index] == 'Possible' %}
 					<!-- + '(Possible) ' -->
 						<b style="color: #c9c60b;">{{sentence[i]}}</b> 
-					{% elif pred_assertion[index] == 'Not-present' %}
-					<!-- + '(Not-present) ' -->
+					{% elif pred_assertion[index] == 'Conditional' %}
+					<!-- + '(Conditional) ' -->
+						<b style="color: #984a30eb;">{{sentence[i]}}</b> 
+					{% elif pred_assertion[index] == 'Associated with someone else' %}
+					<!-- + '(Associated with some one else) ' -->
+						<b style="color: #898726;">{{sentence[i]}}</b> 
+					{% elif pred_assertion[index] == 'Hypothetical' %}
+					<!-- + '(Hyphothetical) ' -->
+						<b style="color: #234e25;">{{sentence[i]}}</b> 
+					{% elif pred_assertion[index] == 'Absent' %}
+					<!-- + '(Absent) ' -->
 						<b style="color: #3AE43F;">{{sentence[i]}}</b> 
 					{%  endif %}
 

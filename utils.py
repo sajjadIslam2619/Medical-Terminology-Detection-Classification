@@ -30,7 +30,7 @@ def load_assertion_model():
     tokenizer = tokenizer_class.from_pretrained(
         MODEL_ADDRESS, do_lower_case=False)
     model = model_class.from_pretrained(MODEL_ADDRESS, config=model_config)
-    output_dir = './trained_models/Assertion/3_lable_model'
+    output_dir = './trained_models/Assertion/6_label_model_oversampling'
     model = model_class.from_pretrained(output_dir)
     tokenizer = tokenizer_class.from_pretrained(output_dir)
     return model, tokenizer

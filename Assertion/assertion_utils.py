@@ -50,7 +50,13 @@ def assertion_model_inference(model, input_ids, attention_mask):
         elif x == 1:
             return 'Possible'
         elif x == 2:
-            return 'Not-present'
+            return 'Conditional'
+        elif x == 3:
+            return 'Associated with someone else'
+        elif x == 4:
+            return 'Hypothetical'
+        elif x == 5:
+            return 'Absent'
 
     pred_labels = map(index2label, pred_labels_i)
     return list(pred_labels)
