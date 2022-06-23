@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
+	<title>Result</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <script>
@@ -93,7 +93,7 @@
 
 	</div>
 	</header>
-	<p style="font-size:20;text-align: center;"><b>Results for NER</b></p>
+	<p style="font-size:20;text-align: center;"><b>Results for Clinical Entity</b></p>
 	<div class="results">
 
 		{% for index_sentence in range(all_sentences|length) -%}
@@ -108,7 +108,7 @@
 
 				{% if i in assertion_index %}
 					{% set index = assertion_index.index(i) %}
-					{% if pred_assertion[index] == 'Present' %}
+					{% if pred_assertion[index] == 'Present' %} 
 					<!-- + '(PRESENT) ' -->
 						<b class="entity entity_present" style="color: #ff4000eb;">{{sentence[i]}}</b> 
 					{% elif pred_assertion[index] == 'Possible' %}
@@ -143,6 +143,66 @@
 
 			{%- endfor %}
 		{%- endfor %}
+
+	</div>
+	<div> <br/> <br/> </div>
+	<style>
+		table, th, td {
+		  border: 1px solid black;
+		  border-collapse: collapse;
+		}
+	</style>
+
+	<div class="problem-entity-table"> 
+
+		<table> <!--style="width:100%"-->
+			<tr>
+			  <th>Assertion Label</th>
+			  <th>Entity List</th>
+			</tr>
+			<tr>
+			  <td>Present</td>
+			  <td> 
+				{% set list_ast_present_entity = list_ast_present_entity%} 
+				{{list_ast_present_entity}}
+			  </td> 
+			</tr>
+			<tr>
+			  <td>Absent</td>
+			  <td>
+				{% set list_ast_absent_entity = list_ast_absent_entity%} 
+				{{list_ast_absent_entity}}
+			  </td>
+			</tr>
+			<tr>
+			  <td>Possible</td>
+			  <td>
+				{% set list_ast_posssible_entity = list_ast_posssible_entity%} 
+				{{list_ast_posssible_entity}}
+			  </td>
+			</tr>
+			<tr>
+			  <td>Conditional</td>
+			  <td>
+				{% set list_ast_conditional_entity = list_ast_conditional_entity%} 
+				{{list_ast_conditional_entity}}
+			  </td>
+			</tr>
+			<tr>
+			   <td>Hyphothetical</td>
+			   <td>
+				{% set list_ast_hyphothetical_entity = list_ast_hyphothetical_entity%} 
+				{{list_ast_hyphothetical_entity}}
+			   </td>
+			</tr>
+			<tr>
+			   <td>Associated with someone else &nbsp;</td>
+			   <td>
+				{% set list_ast_associated_entity = list_ast_associated_entity%} 
+				{{list_ast_associated_entity}}
+			   </td>
+			</tr>
+		</table>
 
 	</div>
 
