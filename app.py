@@ -115,7 +115,6 @@ def home():
 
 @app.route("/predict_file", methods=["POST"])
 def predict_file():
-    print("====================================================")
     all_sentences, all_tags = [], []
     if request.method != "POST":
         return None
@@ -144,6 +143,7 @@ def predict_file():
             all_test_in_text,
         ) = predict_assertion(all_sentences, all_tags)
 
+    # These lists are to collect problem-entity label-wise and display on the UI Table
     list_ast_present_entity = []
     list_ast_absent_entity = []
     list_ast_posssible_entity = []
@@ -151,40 +151,118 @@ def predict_file():
     list_ast_hyphothetical_entity = []
     list_ast_associated_entity = []
 
-    for sentence, pred_assertion, assertion_index, treatment_index, test_index in zip(
+    # This string is to format full clinical text and add <tag>, like  <Problem-present> problem-entity </Problem-present> 
+    output_text_with_classification = ''
+
+    for (
+        sentence,
+        tags,
+        pred_assertion,
+        assertion_index,
+        treatment_index,
+        test_index,
+    ) in zip(
         all_sentences,
+        all_tags,
         assertion_in_sentence,
         all_problems_in_text_flatten,
         all_treatment_in_text,
         all_test_in_text,
     ):
+
         for i, word in enumerate(sentence):
+            
             if i in assertion_index:
                 index = assertion_index.index(i)
-                if pred_assertion[index] == "Present":
-                    # print(f'||| {word} |||', end=' ')
-                    list_ast_present_entity.append(word)
-                elif pred_assertion[index] == "Possible":
-                    # print(f'--- {word} ---', end=' ')
-                    list_ast_posssible_entity.append(word)
-                elif pred_assertion[index] == "Conditional":
-                    # print(f'+++ {word} +++', end=' ')
-                    list_ast_conditional_entity.append(word)
-                elif pred_assertion[index] == "Hypothetical":
-                    # print(f'+++ {word} +++', end=' ')
-                    list_ast_hyphothetical_entity.append(word)
-                elif pred_assertion[index] == "Associated with someone else":
-                    # print(f'+++ {word} +++', end=' ')
-                    list_ast_associated_entity.append(word)
-                elif pred_assertion[index] == "Absent":
-                    # print(f'+++ {word} +++', end=' ')
-                    list_ast_absent_entity.append(word)
+                if (tags[i] == 'B-problem') : 
+                    if pred_assertion[index] == "Present":
+                        list_ast_present_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-present> " + word
+                        # For one word problem-entity, there is only 'beginning' tag no 'inside' tag
+                        # tags : 'O', 'O', 'B-problem', 'O', 'O',
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-present> " 
+                    elif pred_assertion[index] == "Possible":
+                        list_ast_posssible_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-possible> " + word
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-possible> " 
+                    elif pred_assertion[index] == "Conditional":
+                        list_ast_conditional_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-conditional> " + word
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-conditional> " 
+                    elif pred_assertion[index] == "Hypothetical":
+                        list_ast_hyphothetical_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-hypothetical> " + word
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-hypothetical> " 
+                    elif pred_assertion[index] == "Associated with someone else":
+                        list_ast_associated_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-associated> " + word
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-associated> " 
+                    elif pred_assertion[index] == "Absent":
+                        list_ast_absent_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-absent> " + word
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-absent> " 
+                elif (tags[i] == 'I-problem'): 
+                    if pred_assertion[index] == "Present":
+                        list_ast_present_entity[-1] = list_ast_present_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        # tags: 'O', 'B-problem', 'I-problem', 'I-problem', 'O',
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-present> " 
+                    elif pred_assertion[index] == "Possible":
+                        list_ast_posssible_entity[-1] = list_ast_posssible_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-possible> " 
+                    elif pred_assertion[index] == "Conditional":
+                        list_ast_conditional_entity[-1] = list_ast_conditional_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-conditional> " 
+                    elif pred_assertion[index] == "Hypothetical":
+                        list_ast_hyphothetical_entity[-1] = list_ast_hyphothetical_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-hypothetical> " 
+                    elif pred_assertion[index] == "Associated with someone else":
+                        list_ast_associated_entity[-1] = list_ast_associated_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-associated> " 
+                    elif pred_assertion[index] == "Absent":
+                        list_ast_absent_entity[-1] = list_ast_absent_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-absent> " 
             elif i in treatment_index:
-                print(f"### {word} ###", end=" ")
+                if (tags[i] == 'B-treatment') : 
+                    output_text_with_classification = output_text_with_classification + " <Treatment> " + word
+                    # For one word Treatment-entity, there is only 'beginning' tag no 'inside' tag
+                    if tags[i+1] != 'I-treatment':
+                        output_text_with_classification = output_text_with_classification + " </Treatment> " 
+                elif (tags[i] == 'I-treatment') :
+                    output_text_with_classification = output_text_with_classification + " " + word 
+                    if tags[i+1] != 'I-treatment':
+                        output_text_with_classification = output_text_with_classification + " </Treatment> " 
             elif i in test_index:
-                print(f"@@@ {word} ###", end=" ")
+                if (tags[i] == 'B-test') : 
+                    output_text_with_classification = output_text_with_classification + " <Test> " + word
+                    # For one word Test-entity, there is only 'beginning' tag no 'inside' tag
+                    if tags[i+1] != 'I-test':
+                        output_text_with_classification = output_text_with_classification + " </Test> " 
+                elif (tags[i] == 'I-test') :
+                    output_text_with_classification = output_text_with_classification + " " + word 
+                    if tags[i+1] != 'I-test':
+                        output_text_with_classification = output_text_with_classification + " </Test> " 
             else:
-                print(word, end=" ")
+                if (word.strip() != '[SEP]' and word.strip() != '[CLS]'):
+                    output_text_with_classification = output_text_with_classification + " " + word
+    
 
     return render_template(
         "pred_result.html",
@@ -215,6 +293,7 @@ def predict_message():
         all_test_in_text,
     ) = predict_assertion(all_sentences, all_tags)
 
+    # These lists are to collect problem-entity label-wise and display on the UI Table
     list_ast_present_entity = []
     list_ast_absent_entity = []
     list_ast_posssible_entity = []
@@ -222,40 +301,118 @@ def predict_message():
     list_ast_hyphothetical_entity = []
     list_ast_associated_entity = []
 
-    for sentence, pred_assertion, assertion_index, treatment_index, test_index in zip(
+    # This string is to format full clinical text and add <tag>, like  <Problem-present> problem-entity </Problem-present> 
+    output_text_with_classification = ''
+
+    for (
+        sentence,
+        tags,
+        pred_assertion,
+        assertion_index,
+        treatment_index,
+        test_index,
+    ) in zip(
         all_sentences,
+        all_tags,
         assertion_in_sentence,
         all_problems_in_text_flatten,
         all_treatment_in_text,
         all_test_in_text,
     ):
+
         for i, word in enumerate(sentence):
+            
             if i in assertion_index:
                 index = assertion_index.index(i)
-                if pred_assertion[index] == "Present":
-                    # print(f'||| {word} |||', end=' ')
-                    list_ast_present_entity.append(word)
-                elif pred_assertion[index] == "Possible":
-                    # print(f'--- {word} ---', end=' ')
-                    list_ast_posssible_entity.append(word)
-                elif pred_assertion[index] == "Conditional":
-                    # print(f'+++ {word} +++', end=' ')
-                    list_ast_conditional_entity.append(word)
-                elif pred_assertion[index] == "Hypothetical":
-                    # print(f'+++ {word} +++', end=' ')
-                    list_ast_hyphothetical_entity.append(word)
-                elif pred_assertion[index] == "Associated with someone else":
-                    # print(f'+++ {word} +++', end=' ')
-                    list_ast_associated_entity.append(word)
-                elif pred_assertion[index] == "Absent":
-                    # print(f'+++ {word} +++', end=' ')
-                    list_ast_absent_entity.append(word)
+                if (tags[i] == 'B-problem') : 
+                    if pred_assertion[index] == "Present":
+                        list_ast_present_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-present> " + word
+                        # For one word problem-entity, there is only 'beginning' tag no 'inside' tag
+                        # tags : 'O', 'O', 'B-problem', 'O', 'O',
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-present> " 
+                    elif pred_assertion[index] == "Possible":
+                        list_ast_posssible_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-possible> " + word
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-possible> " 
+                    elif pred_assertion[index] == "Conditional":
+                        list_ast_conditional_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-conditional> " + word
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-conditional> " 
+                    elif pred_assertion[index] == "Hypothetical":
+                        list_ast_hyphothetical_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-hypothetical> " + word
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-hypothetical> " 
+                    elif pred_assertion[index] == "Associated with someone else":
+                        list_ast_associated_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-associated> " + word
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-associated> " 
+                    elif pred_assertion[index] == "Absent":
+                        list_ast_absent_entity.append(word)
+                        output_text_with_classification = output_text_with_classification + " <Problem-absent> " + word
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-absent> " 
+                elif (tags[i] == 'I-problem'): 
+                    if pred_assertion[index] == "Present":
+                        list_ast_present_entity[-1] = list_ast_present_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        # tags: 'O', 'B-problem', 'I-problem', 'I-problem', 'O',
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-present> " 
+                    elif pred_assertion[index] == "Possible":
+                        list_ast_posssible_entity[-1] = list_ast_posssible_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-possible> " 
+                    elif pred_assertion[index] == "Conditional":
+                        list_ast_conditional_entity[-1] = list_ast_conditional_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-conditional> " 
+                    elif pred_assertion[index] == "Hypothetical":
+                        list_ast_hyphothetical_entity[-1] = list_ast_hyphothetical_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-hypothetical> " 
+                    elif pred_assertion[index] == "Associated with someone else":
+                        list_ast_associated_entity[-1] = list_ast_associated_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-associated> " 
+                    elif pred_assertion[index] == "Absent":
+                        list_ast_absent_entity[-1] = list_ast_absent_entity[-1] +" "+ word
+                        output_text_with_classification = output_text_with_classification + " " + word 
+                        if tags[i+1] != 'I-problem':
+                            output_text_with_classification = output_text_with_classification + " </Problem-absent> " 
             elif i in treatment_index:
-                print(f"### {word} ###", end=" ")
+                if (tags[i] == 'B-treatment') : 
+                    output_text_with_classification = output_text_with_classification + " <Treatment> " + word
+                    # For one word Treatment-entity, there is only 'beginning' tag no 'inside' tag
+                    if tags[i+1] != 'I-treatment':
+                        output_text_with_classification = output_text_with_classification + " </Treatment> " 
+                elif (tags[i] == 'I-treatment') :
+                    output_text_with_classification = output_text_with_classification + " " + word 
+                    if tags[i+1] != 'I-treatment':
+                        output_text_with_classification = output_text_with_classification + " </Treatment> " 
             elif i in test_index:
-                print(f"@@@ {word} ###", end=" ")
+                if (tags[i] == 'B-test') : 
+                    output_text_with_classification = output_text_with_classification + " <Test> " + word
+                    # For one word Test-entity, there is only 'beginning' tag no 'inside' tag
+                    if tags[i+1] != 'I-test':
+                        output_text_with_classification = output_text_with_classification + " </Test> " 
+                elif (tags[i] == 'I-test') :
+                    output_text_with_classification = output_text_with_classification + " " + word 
+                    if tags[i+1] != 'I-test':
+                        output_text_with_classification = output_text_with_classification + " </Test> " 
             else:
-                print(word, end=" ")
+                if (word.strip() != '[SEP]' and word.strip() != '[CLS]'):
+                    output_text_with_classification = output_text_with_classification + " " + word
+    
 
     return render_template(
         "pred_result.html",

@@ -164,42 +164,42 @@
 			  <td>Present</td>
 			  <td> 
 				{% set list_ast_present_entity = list_ast_present_entity%} 
-				{{list_ast_present_entity}}
+				{{', '.join(list_ast_present_entity)}}
 			  </td> 
 			</tr>
 			<tr>
 			  <td>Absent</td>
 			  <td>
 				{% set list_ast_absent_entity = list_ast_absent_entity%} 
-				{{list_ast_absent_entity}}
+				{{', '.join(list_ast_absent_entity)}}
 			  </td>
 			</tr>
 			<tr>
 			  <td>Possible</td>
 			  <td>
 				{% set list_ast_posssible_entity = list_ast_posssible_entity%} 
-				{{list_ast_posssible_entity}}
+				{{', '.join(list_ast_posssible_entity)}}
 			  </td>
 			</tr>
 			<tr>
 			  <td>Conditional</td>
 			  <td>
 				{% set list_ast_conditional_entity = list_ast_conditional_entity%} 
-				{{list_ast_conditional_entity}}
+				{{', '.join(list_ast_conditional_entity)}}
 			  </td>
 			</tr>
 			<tr>
 			   <td>Hyphothetical</td>
 			   <td>
 				{% set list_ast_hyphothetical_entity = list_ast_hyphothetical_entity%} 
-				{{list_ast_hyphothetical_entity}}
+				{{', '.join(list_ast_hyphothetical_entity)}}
 			   </td>
 			</tr>
 			<tr>
 			   <td>Associated with someone else &nbsp;</td>
 			   <td>
 				{% set list_ast_associated_entity = list_ast_associated_entity%} 
-				{{list_ast_associated_entity}}
+				{{', '.join(list_ast_associated_entity)}}
 			   </td>
 			</tr>
 		</table>
