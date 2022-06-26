@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, flash
+from flask import (send_file, url_for, jsonify)
+
 import jinja2
 
 env = jinja2.Environment()
@@ -24,6 +26,7 @@ except Exception:
 model_ner, tokenizer_ner = load_ner_model()
 model_assertion, tokenizer_assertion = load_assertion_model()
 output_eval_file = "./Results/eval_results.txt"
+output_classification_file = 'static/download/txt/output_classification.txt'
 
 UPLOAD_FOLDER = "./Results"
 ALLOWED_EXTENSIONS = {"txt"}
@@ -263,6 +266,11 @@ def predict_file():
                 if (word.strip() != '[SEP]' and word.strip() != '[CLS]'):
                     output_text_with_classification = output_text_with_classification + " " + word
     
+    try:
+        with open(output_classification_file, 'w') as f:
+            f.write(output_text_with_classification)
+    except FileNotFoundError:
+        print("The 'tatic/download/txt/' directory does not exist")
 
     return render_template(
         "pred_result.html",
@@ -413,6 +421,11 @@ def predict_message():
                 if (word.strip() != '[SEP]' and word.strip() != '[CLS]'):
                     output_text_with_classification = output_text_with_classification + " " + word
     
+    try:
+        with open(output_classification_file, 'w') as f:
+            f.write(output_text_with_classification)
+    except FileNotFoundError:
+        print("The 'static/download/txt/' directory does not exist")
 
     return render_template(
         "pred_result.html",
@@ -485,6 +498,11 @@ def evaluate():
     #                        true_label=y_true, pred_label=y_pred,
     #                        file_name=os.path.basename(f_name))
 
+
+@app.route('/download')
+def download():
+    path = output_classification_file
+    return send_file(path, as_attachment=True)
 
 if __name__ == "__main__":
     # app.run(debug=True)
