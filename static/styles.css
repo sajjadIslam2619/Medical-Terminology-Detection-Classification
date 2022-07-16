@@ -54,3 +54,15 @@ header h2{
     width: 200px;
     height: 150px;
 }
+
+
+#Progress_Status {
+	width: 50%;
+	background-color: #ddd;
+}
+
+#myprogressBar {
+	width: 2%;
+	height: 20px;
+	background-color: #4CAF50;
+}        

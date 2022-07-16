@@ -16,6 +16,7 @@ from Assertion.assertion_utils import *
 from utils import *
 from seqeval.metrics import classification_report, accuracy_score, f1_score
 import stanza
+from zipfile import ZipFile
 
 try:
     nlp = stanza.Pipeline(lang="en", processors="tokenize")
@@ -27,12 +28,15 @@ model_ner, tokenizer_ner = load_ner_model()
 model_assertion, tokenizer_assertion = load_assertion_model()
 output_eval_file = "./Results/eval_results.txt"
 output_classification_file = 'static/download/txt/output_classification.txt'
+output_file_path = "static/download/batch-process/"
 
 UPLOAD_FOLDER = "./Results"
+UPLOAD_FILES_FOLDER = "./Static/upload/txt"
 ALLOWED_EXTENSIONS = {"txt"}
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["UPLOAD_FILES_FOLDER"] = UPLOAD_FILES_FOLDER
 
 
 def allowed_file(filename):
@@ -113,7 +117,213 @@ def predict_assertion(all_sentences, all_tags):
 
 @app.route("/")
 def home():
-    return render_template("home.html")
+    total_file = 0 
+    files_name_str = ""
+    return render_template("home.html", total_file=total_file, files_name_str = files_name_str)
+
+
+@app.route("/predict_files_batch", methods=['GET', 'POST'])
+def predict_files_batch():
+    all_sentences, all_tags = [], []
+    #if request.method != "POST":
+        #return None
+        # check if the post request has the file part
+    if "file" not in request.files:
+        flash("No file part")
+        return None
+    files = request.files.getlist('file')
+
+    # output_format=request.args.get('output_format', None)
+    # total_file=request.args.get('total_file', None)
+    # files_name_str=request.args.get('files_name_str', None)
+
+    total_file = 0 
+    files_name_str = ""
+
+    for i, file in enumerate(files):
+        if file.filename == "":
+            flash("No selected file")
+            return None
+        if file and allowed_file(file.filename):
+            file_name = secure_filename(file.filename)
+            if i > 0:
+                files_name_str += ", "
+            files_name_str += file_name  
+            file.save(os.path.join(app.config["UPLOAD_FILES_FOLDER"], file_name))
+            file.seek(0)
+            long_text = file.read()
+            long_text = str(long_text, "utf-8")
+            total_file = total_file + 1
+
+            #file_name = file_name.strip()
+            file_path = UPLOAD_FILES_FOLDER + "/" + file_name
+            file = open(file_path,'r')
+            long_text = file.read()
+
+            all_sentences, all_tags = predict_entities(long_text)
+
+            (assertion_in_sentence,all_problems_in_text_flatten,all_treatment_in_text,all_test_in_text,
+            ) = predict_assertion(all_sentences, all_tags)
+
+            # These lists are to collect problem-entity label-wise and display on the UI Table
+            list_ast_present_entity = []
+            list_ast_absent_entity = []
+            list_ast_posssible_entity = []
+            list_ast_conditional_entity = []
+            list_ast_hyphothetical_entity = []
+            list_ast_associated_entity = []
+
+            # This string is to format full clinical text and add <tag>, like  <Problem-present> problem-entity </Problem-present> 
+            output_text_with_classification = ''
+
+            for (sentence,tags,pred_assertion,assertion_index,treatment_index,test_index,
+            ) in zip(all_sentences,all_tags,assertion_in_sentence,all_problems_in_text_flatten,all_treatment_in_text,all_test_in_text,
+            ):
+
+                for i, word in enumerate(sentence):
+                    
+                    if i in assertion_index:
+                        index = assertion_index.index(i)
+                        if (tags[i] == 'B-problem') : 
+                            if pred_assertion[index] == "Present":
+                                list_ast_present_entity.append(word)
+                                output_text_with_classification = output_text_with_classification + " <Problem-present> " + word
+                                # For one word problem-entity, there is only 'beginning' tag no 'inside' tag
+                                # tags : 'O', 'O', 'B-problem', 'O', 'O',
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-present> " 
+                            elif pred_assertion[index] == "Possible":
+                                list_ast_posssible_entity.append(word)
+                                output_text_with_classification = output_text_with_classification + " <Problem-possible> " + word
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-possible> " 
+                            elif pred_assertion[index] == "Conditional":
+                                list_ast_conditional_entity.append(word)
+                                output_text_with_classification = output_text_with_classification + " <Problem-conditional> " + word
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-conditional> " 
+                            elif pred_assertion[index] == "Hypothetical":
+                                list_ast_hyphothetical_entity.append(word)
+                                output_text_with_classification = output_text_with_classification + " <Problem-hypothetical> " + word
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-hypothetical> " 
+                            elif pred_assertion[index] == "Associated with someone else":
+                                list_ast_associated_entity.append(word)
+                                output_text_with_classification = output_text_with_classification + " <Problem-associated> " + word
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-associated> " 
+                            elif pred_assertion[index] == "Absent":
+                                list_ast_absent_entity.append(word)
+                                output_text_with_classification = output_text_with_classification + " <Problem-absent> " + word
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-absent> " 
+                        elif (tags[i] == 'I-problem'): 
+                            if pred_assertion[index] == "Present":
+                                list_ast_present_entity[-1] = list_ast_present_entity[-1] +" "+ word
+                                output_text_with_classification = output_text_with_classification + " " + word 
+                                # tags: 'O', 'B-problem', 'I-problem', 'I-problem', 'O',
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-present> " 
+                            elif pred_assertion[index] == "Possible":
+                                list_ast_posssible_entity[-1] = list_ast_posssible_entity[-1] +" "+ word
+                                output_text_with_classification = output_text_with_classification + " " + word 
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-possible> " 
+                            elif pred_assertion[index] == "Conditional":
+                                list_ast_conditional_entity[-1] = list_ast_conditional_entity[-1] +" "+ word
+                                output_text_with_classification = output_text_with_classification + " " + word 
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-conditional> " 
+                            elif pred_assertion[index] == "Hypothetical":
+                                list_ast_hyphothetical_entity[-1] = list_ast_hyphothetical_entity[-1] +" "+ word
+                                output_text_with_classification = output_text_with_classification + " " + word 
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-hypothetical> " 
+                            elif pred_assertion[index] == "Associated with someone else":
+                                list_ast_associated_entity[-1] = list_ast_associated_entity[-1] +" "+ word
+                                output_text_with_classification = output_text_with_classification + " " + word 
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-associated> " 
+                            elif pred_assertion[index] == "Absent":
+                                list_ast_absent_entity[-1] = list_ast_absent_entity[-1] +" "+ word
+                                output_text_with_classification = output_text_with_classification + " " + word 
+                                if tags[i+1] != 'I-problem':
+                                    output_text_with_classification = output_text_with_classification + " </Problem-absent> " 
+                    elif i in treatment_index:
+                        if (tags[i] == 'B-treatment') : 
+                            output_text_with_classification = output_text_with_classification + " <Treatment> " + word
+                            # For one word Treatment-entity, there is only 'beginning' tag no 'inside' tag
+                            if tags[i+1] != 'I-treatment':
+                                output_text_with_classification = output_text_with_classification + " </Treatment> " 
+                        elif (tags[i] == 'I-treatment') :
+                            output_text_with_classification = output_text_with_classification + " " + word 
+                            if tags[i+1] != 'I-treatment':
+                                output_text_with_classification = output_text_with_classification + " </Treatment> " 
+                    elif i in test_index:
+                        if (tags[i] == 'B-test') : 
+                            output_text_with_classification = output_text_with_classification + " <Test> " + word
+                            # For one word Test-entity, there is only 'beginning' tag no 'inside' tag
+                            if tags[i+1] != 'I-test':
+                                output_text_with_classification = output_text_with_classification + " </Test> " 
+                        elif (tags[i] == 'I-test') :
+                            output_text_with_classification = output_text_with_classification + " " + word 
+                            if tags[i+1] != 'I-test':
+                                output_text_with_classification = output_text_with_classification + " </Test> " 
+                    else:
+                        if (word.strip() != '[SEP]' and word.strip() != '[CLS]'):
+                            output_text_with_classification = output_text_with_classification + " " + word
+            
+            
+            output_file = output_file_path +"output_"+ file_name
+            try:
+                with open(output_file, 'w') as f:
+                    f.write(output_text_with_classification)
+            except FileNotFoundError:
+                print("The 'static/download/batch-process/' directory does not exist")
+        
+            if os.path.exists(os.path.join(app.config["UPLOAD_FILES_FOLDER"], file_name)):
+                os.remove(os.path.join(app.config["UPLOAD_FILES_FOLDER"], file_name))
+            else:
+                print(" The file does not exist : ", file_name)
+
+
+    return render_template("home.html", total_file = total_file, files_name_str = files_name_str)
+
+
+@app.route("/download_files_batch", methods=['GET', 'POST'])
+def download_files_batch():
+    output_format=request.args.get('output_format', None)
+    total_file=request.args.get('total_file', None)
+    files_name_str=request.args.get('files_name_str', None)
+    print("output_format :: ", output_format)
+    print("total_file :: ",total_file)
+    print("files_name_str :: ", files_name_str)
+    file_name_list = files_name_str.split(",")
+
+    if output_format == "txt":
+        target = output_file_path
+        stream = BytesIO()
+        with ZipFile(stream, 'w') as zf:
+            for file in file_name_list: 
+                file = file.strip()
+                file = os.path.join(target, "output_"+file)
+                zf.write(file, os.path.basename(file))
+
+                #file_path = os.path.join(output_file_path, "output_"+file)
+                if os.path.exists(file):
+                    os.remove(file)
+                else:
+                    print(" The file does not exist : ", file)
+        stream.seek(0)
+
+        return send_file(
+            stream,
+            as_attachment=True,
+            attachment_filename='output_files.zip'
+        )
+    total_file = 0 
+    files_name_str = ""           
+    return render_template("home.html", total_file=total_file, files_name_str = files_name_str)
 
 
 @app.route("/predict_file", methods=["POST"])
@@ -270,7 +480,7 @@ def predict_file():
         with open(output_classification_file, 'w') as f:
             f.write(output_text_with_classification)
     except FileNotFoundError:
-        print("The 'tatic/download/txt/' directory does not exist")
+        print("The 'static/download/txt/' directory does not exist")
 
     return render_template(
         "pred_result.html",
