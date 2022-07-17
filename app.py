@@ -17,6 +17,7 @@ from utils import *
 from seqeval.metrics import classification_report, accuracy_score, f1_score
 import stanza
 from zipfile import ZipFile
+import json
 
 try:
     nlp = stanza.Pipeline(lang="en", processors="tokenize")
@@ -29,6 +30,8 @@ model_assertion, tokenizer_assertion = load_assertion_model()
 output_eval_file = "./Results/eval_results.txt"
 output_classification_file = 'static/download/txt/output_classification.txt'
 output_file_path = "static/download/batch-process/"
+output_JSON_path = "static/download/JSON/output_entity.json"
+output_zip_name = 'output_files.zip'
 
 UPLOAD_FOLDER = "./Results"
 UPLOAD_FILES_FOLDER = "./Static/upload/txt"
@@ -139,6 +142,7 @@ def predict_files_batch():
 
     total_file = 0 
     files_name_str = ""
+    JSON_Obj_dict_list = []
 
     for i, file in enumerate(files):
         if file.filename == "":
@@ -165,13 +169,25 @@ def predict_files_batch():
             (assertion_in_sentence,all_problems_in_text_flatten,all_treatment_in_text,all_test_in_text,
             ) = predict_assertion(all_sentences, all_tags)
 
-            # These lists are to collect problem-entity label-wise and display on the UI Table
+            # These lists are to collect problem-entity label-wise and display on the UI Table and prepare JSON object
             list_ast_present_entity = []
             list_ast_absent_entity = []
             list_ast_posssible_entity = []
             list_ast_conditional_entity = []
             list_ast_hyphothetical_entity = []
             list_ast_associated_entity = []
+
+            list_treatment_entity = []
+            list_test_entity = []
+
+            ##### JSON Object structure #####
+            # file_name : file_name
+            # test : list_test_entity
+            # treatment : list_treatment_entity
+            # problem : { present: list_ast_present_entity, absent: list_ast_absent_entity, possible : list_ast_posssible_entity ... etc}
+            ##### JSON Object structure #####
+            JSON_Obj_dict = {}
+            JSON_Obj_dict['file_name'] = file_name
 
             # This string is to format full clinical text and add <tag>, like  <Problem-present> problem-entity </Problem-present> 
             output_text_with_classification = ''
@@ -250,22 +266,26 @@ def predict_files_batch():
                                 if tags[i+1] != 'I-problem':
                                     output_text_with_classification = output_text_with_classification + " </Problem-absent> " 
                     elif i in treatment_index:
-                        if (tags[i] == 'B-treatment') : 
+                        if (tags[i] == 'B-treatment') :
+                            list_treatment_entity.append(word) 
                             output_text_with_classification = output_text_with_classification + " <Treatment> " + word
                             # For one word Treatment-entity, there is only 'beginning' tag no 'inside' tag
                             if tags[i+1] != 'I-treatment':
                                 output_text_with_classification = output_text_with_classification + " </Treatment> " 
                         elif (tags[i] == 'I-treatment') :
+                            list_treatment_entity[-1] = list_treatment_entity[-1] +" "+ word
                             output_text_with_classification = output_text_with_classification + " " + word 
                             if tags[i+1] != 'I-treatment':
                                 output_text_with_classification = output_text_with_classification + " </Treatment> " 
                     elif i in test_index:
-                        if (tags[i] == 'B-test') : 
+                        if (tags[i] == 'B-test') :
+                            list_test_entity.append(word) 
                             output_text_with_classification = output_text_with_classification + " <Test> " + word
                             # For one word Test-entity, there is only 'beginning' tag no 'inside' tag
                             if tags[i+1] != 'I-test':
                                 output_text_with_classification = output_text_with_classification + " </Test> " 
                         elif (tags[i] == 'I-test') :
+                            list_test_entity[-1] = list_test_entity[-1] +" "+ word
                             output_text_with_classification = output_text_with_classification + " " + word 
                             if tags[i+1] != 'I-test':
                                 output_text_with_classification = output_text_with_classification + " </Test> " 
@@ -273,7 +293,20 @@ def predict_files_batch():
                         if (word.strip() != '[SEP]' and word.strip() != '[CLS]'):
                             output_text_with_classification = output_text_with_classification + " " + word
             
-            
+            JSON_Obj_Problem_dict = {}
+            JSON_Obj_Problem_dict['present'] = list_ast_present_entity
+            JSON_Obj_Problem_dict['absent'] = list_ast_absent_entity
+            JSON_Obj_Problem_dict['possible'] = list_ast_posssible_entity
+            JSON_Obj_Problem_dict['conditional'] = list_ast_conditional_entity
+            JSON_Obj_Problem_dict['hypothetical']= list_ast_hyphothetical_entity
+            JSON_Obj_Problem_dict['associated']= list_ast_associated_entity
+
+            JSON_Obj_dict['problem'] = JSON_Obj_Problem_dict
+            JSON_Obj_dict['treatment'] = list_treatment_entity
+            JSON_Obj_dict['test'] = list_test_entity
+
+            JSON_Obj_dict_list.append(JSON_Obj_dict)
+
             output_file = output_file_path +"output_"+ file_name
             try:
                 with open(output_file, 'w') as f:
@@ -285,6 +318,10 @@ def predict_files_batch():
                 os.remove(os.path.join(app.config["UPLOAD_FILES_FOLDER"], file_name))
             else:
                 print(" The file does not exist : ", file_name)
+        
+    json_object = json.dumps(JSON_Obj_dict_list, indent=4)
+    with open(output_JSON_path, "w") as outfile:
+        outfile.write(json_object)
 
 
     return render_template("home.html", total_file = total_file, files_name_str = files_name_str)
@@ -295,9 +332,6 @@ def download_files_batch():
     output_format=request.args.get('output_format', None)
     total_file=request.args.get('total_file', None)
     files_name_str=request.args.get('files_name_str', None)
-    print("output_format :: ", output_format)
-    print("total_file :: ",total_file)
-    print("files_name_str :: ", files_name_str)
     file_name_list = files_name_str.split(",")
 
     if output_format == "txt":
@@ -309,7 +343,6 @@ def download_files_batch():
                 file = os.path.join(target, "output_"+file)
                 zf.write(file, os.path.basename(file))
 
-                #file_path = os.path.join(output_file_path, "output_"+file)
                 if os.path.exists(file):
                     os.remove(file)
                 else:
@@ -319,8 +352,13 @@ def download_files_batch():
         return send_file(
             stream,
             as_attachment=True,
-            attachment_filename='output_files.zip'
+            attachment_filename = output_zip_name
         )
+    
+    elif output_format == "JSON":
+        path = output_JSON_path
+        return send_file(path, as_attachment=True)
+
     total_file = 0 
     files_name_str = ""           
     return render_template("home.html", total_file=total_file, files_name_str = files_name_str)
@@ -347,6 +385,13 @@ def predict_file():
         file.seek(0)
         long_text = file.read()
         long_text = str(long_text, "utf-8")
+
+        upload_file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        if os.path.exists(upload_file_path):
+            os.remove(upload_file_path)
+        else:
+            print(" The file does not exist : ", upload_file_path)
+
         all_sentences, all_tags = predict_entities(long_text)
 
         (
