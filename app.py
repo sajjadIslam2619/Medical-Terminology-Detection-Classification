@@ -120,10 +120,14 @@ def predict_assertion(all_sentences, all_tags):
         all_test_in_text,
     )
 
+# Ast :   P P P P A A
+# Tag : O B B X I B I O
+# output : O <> B </> <> B X I </> <> B I </> O 
 
 def add_problem_end_tag(
     output_text_with_classification,
     i,
+    tags,
     assertion_index,
     pred_assertion,
     assertion,
@@ -131,11 +135,23 @@ def add_problem_end_tag(
 ):
     if i + 1 in assertion_index:
         next_index = assertion_index.index(i + 1)
-        if pred_assertion[next_index] != assertion:
+        if pred_assertion[next_index] == assertion:
+            # Ast :  P     P
+            # Tag: O B </> B X I B I O
+            if tags[i+1] == "B-problem": 
+                output_text_with_classification = (
+                    output_text_with_classification + tag_string
+                )
+        else :
+            # Ast :        P     A 
+            # Tag: O B B X I </> B I O
             output_text_with_classification = (
                 output_text_with_classification + tag_string
             )
+            
     else:
+        # Ast :             A
+        # Tag : O B B X I B I </> O
         output_text_with_classification = output_text_with_classification + tag_string
 
     return output_text_with_classification
@@ -174,6 +190,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Present",
@@ -188,6 +205,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Possible",
@@ -204,6 +222,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Conditional",
@@ -220,6 +239,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Hypothetical",
@@ -236,6 +256,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Associated with someone else",
@@ -250,6 +271,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Absent",
@@ -267,6 +289,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Present",
@@ -283,6 +306,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Possible",
@@ -299,6 +323,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Conditional",
@@ -315,6 +340,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Hypothetical",
@@ -331,6 +357,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Associated with someone else",
@@ -345,6 +372,7 @@ def process_sentence(
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
+                        tags,
                         assertion_index,
                         pred_assertion,
                         "Absent",
