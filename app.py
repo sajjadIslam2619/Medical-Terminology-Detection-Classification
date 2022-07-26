@@ -18,9 +18,9 @@ from seqeval.metrics import classification_report, accuracy_score, f1_score
 import stanza
 from zipfile import ZipFile
 import json
-import logging, sys
+#import logging, sys
 
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+#logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 try:
     nlp = stanza.Pipeline(lang="en", processors="tokenize")
@@ -120,9 +120,54 @@ def predict_assertion(all_sentences, all_tags):
         all_test_in_text,
     )
 
-# Ast :   P P P P A A
-# Tag : O B B X I B I O
-# output : O <> B </> <> B X I </> <> B I </> O 
+
+# This method add start-tag if there is no Begin (B) before Inside (I) and Unseen (X). 
+# Ast : - Present   Present  - Present   Absent    Absent    -
+# Tag : O I-problem I-roblem O I-problem I-problem I-problem O
+# output : O <present> B-problem </present> <present> B-problem X I-problem </present> <absent> B-problem I-problem </absent> O 
+
+def add_problem_start_tag(
+    output_text_with_classification,
+    word,
+    i,
+    tags,
+    assertion_index,
+    pred_assertion,
+    list_ast_entity,
+    assertion,
+    tag_string,
+):
+    if i-1 not in assertion_index:
+        # Ast   : -    P   -     P    -
+        # Tag   : O <> I I O <> I I I O
+        list_ast_entity.append(word)
+        output_text_with_classification = (
+            output_text_with_classification + tag_string + word
+        )
+    else: 
+        prev_index = assertion_index.index(i)
+        if pred_assertion[prev_index] != assertion:
+            # Ast   : -     - P     A   -
+            # Tag   : O I I O I <>  I I O
+            list_ast_entity.append(word)
+            output_text_with_classification = (
+                output_text_with_classification + tag_string + word
+            )
+        else :
+            list_ast_entity[-1] = (
+                list_ast_entity[-1] + " " + word
+            )
+            output_text_with_classification = (
+                output_text_with_classification + " " + word
+            )
+
+    return output_text_with_classification, list_ast_entity
+
+
+# This method add end-tag for all cases. 
+# Ast : - Present   Present  Present Present   Absent    Absent    -
+# Tag : O B-problem B-roblem X       I-problem B-problem I-problem O
+# output : O <present> B-problem </present> <present> B-problem X I-problem </present> <absent> B-problem I-problem </absent> O 
 
 def add_problem_end_tag(
     output_text_with_classification,
@@ -174,6 +219,12 @@ def process_sentence(
     list_treatment_entity,
     list_test_entity,
 ):
+    #print('sentence ::: ', sentence)
+    #print('tags ::: ', tags)
+    #print('pred_assertion ::: ', pred_assertion)
+    #print('assertion_index ::: ', assertion_index)
+    #print('treatment_index ::: ', treatment_index)
+    #print('test_index ::: ', test_index)
 
     for i, word in enumerate(sentence):
 
@@ -280,12 +331,18 @@ def process_sentence(
 
             elif tags[i] == "I-problem" or tags[i] == "X":
                 if pred_assertion[index] == "Present":
-                    list_ast_present_entity[-1] = (
-                        list_ast_present_entity[-1] + " " + word
+                    (output_text_with_classification, list_ast_present_entity) = add_problem_start_tag(
+                        output_text_with_classification,
+                        word,
+                        i,
+                        tags,
+                        assertion_index,
+                        pred_assertion,
+                        list_ast_present_entity,
+                        "Present",
+                        " <Problem-present> ",
                     )
-                    output_text_with_classification = (
-                        output_text_with_classification + " " + word
-                    )
+
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
                         i,
@@ -297,11 +354,17 @@ def process_sentence(
                     )
 
                 elif pred_assertion[index] == "Possible":
-                    list_ast_posssible_entity[-1] = (
-                        list_ast_posssible_entity[-1] + " " + word
-                    )
-                    output_text_with_classification = (
-                        output_text_with_classification + " " + word
+
+                    (output_text_with_classification, list_ast_posssible_entity) = add_problem_start_tag(
+                        output_text_with_classification,
+                        word,
+                        i,
+                        tags,
+                        assertion_index,
+                        pred_assertion,
+                        list_ast_posssible_entity,
+                        "Possible",
+                        " <Problem-possible> ",
                     )
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
@@ -314,11 +377,17 @@ def process_sentence(
                     )
 
                 elif pred_assertion[index] == "Conditional":
-                    list_ast_conditional_entity[-1] = (
-                        list_ast_conditional_entity[-1] + " " + word
-                    )
-                    output_text_with_classification = (
-                        output_text_with_classification + " " + word
+
+                    (output_text_with_classification, list_ast_conditional_entity) = add_problem_start_tag(
+                        output_text_with_classification,
+                        word,
+                        i,
+                        tags,
+                        assertion_index,
+                        pred_assertion,
+                        list_ast_conditional_entity,
+                        "Conditional",
+                        " <Problem-conditional> ",
                     )
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
@@ -331,11 +400,17 @@ def process_sentence(
                     )
 
                 elif pred_assertion[index] == "Hypothetical":
-                    list_ast_hyphothetical_entity[-1] = (
-                        list_ast_hyphothetical_entity[-1] + " " + word
-                    )
-                    output_text_with_classification = (
-                        output_text_with_classification + " " + word
+
+                    (output_text_with_classification, list_ast_hyphothetical_entity) = add_problem_start_tag(
+                        output_text_with_classification,
+                        word,
+                        i,
+                        tags,
+                        assertion_index,
+                        pred_assertion,
+                        list_ast_hyphothetical_entity,
+                        "Hypothetical",
+                        " <Problem-hypothetical> ",
                     )
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
@@ -348,11 +423,17 @@ def process_sentence(
                     )
 
                 elif pred_assertion[index] == "Associated with someone else":
-                    list_ast_associated_entity[-1] = (
-                        list_ast_associated_entity[-1] + " " + word
-                    )
-                    output_text_with_classification = (
-                        output_text_with_classification + " " + word
+
+                    (output_text_with_classification, list_ast_associated_entity) = add_problem_start_tag(
+                        output_text_with_classification,
+                        word,
+                        i,
+                        tags,
+                        assertion_index,
+                        pred_assertion,
+                        list_ast_associated_entity,
+                        "Associated with someone else",
+                        " <Problem-associated> ",
                     )
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
@@ -365,9 +446,17 @@ def process_sentence(
                     )
 
                 elif pred_assertion[index] == "Absent":
-                    list_ast_absent_entity[-1] = list_ast_absent_entity[-1] + " " + word
-                    output_text_with_classification = (
-                        output_text_with_classification + " " + word
+
+                    (output_text_with_classification, list_ast_absent_entity) = add_problem_start_tag(
+                        output_text_with_classification,
+                        word,
+                        i,
+                        tags,
+                        assertion_index,
+                        pred_assertion,
+                        list_ast_absent_entity,
+                        "Absent",
+                        " <Problem-absent> ",
                     )
                     output_text_with_classification = add_problem_end_tag(
                         output_text_with_classification,
@@ -391,10 +480,18 @@ def process_sentence(
                         output_text_with_classification + " </Treatment> "
                     )
             elif tags[i] == "I-treatment" or tags[i] == "X":
-                list_treatment_entity[-1] = list_treatment_entity[-1] + " " + word
-                output_text_with_classification = (
-                    output_text_with_classification + " " + word
-                )
+                if i-1 not in treatment_index:
+                    # Tag: O I-treatment O I-treatment X 0 
+                    list_treatment_entity.append(word)
+                    output_text_with_classification = (
+                        output_text_with_classification + " <Treatment> " + word
+                    )
+                else : 
+                    list_treatment_entity[-1] = list_treatment_entity[-1] + " " + word
+                    output_text_with_classification = (
+                        output_text_with_classification + " " + word
+                    )
+
                 if tags[i + 1] != "I-treatment" and tags[i + 1] != "X":
                     output_text_with_classification = (
                         output_text_with_classification + " </Treatment> "
@@ -411,10 +508,17 @@ def process_sentence(
                         output_text_with_classification + " </Test> "
                     )
             elif tags[i] == "I-test" or tags[i] == "X":
-                list_test_entity[-1] = list_test_entity[-1] + " " + word
-                output_text_with_classification = (
-                    output_text_with_classification + " " + word
-                )
+                if i-1 not in test_index:
+                    # Tag: O I-test O I-test X 0 
+                    list_test_entity.append(word)
+                    output_text_with_classification = (
+                        output_text_with_classification + " <Test> " + word
+                    )
+                else :
+                    list_test_entity[-1] = list_test_entity[-1] + " " + word
+                    output_text_with_classification = (
+                        output_text_with_classification + " " + word
+                    )
                 if tags[i + 1] != "I-test" and tags[i + 1] != "X":
                     output_text_with_classification = (
                         output_text_with_classification + " </Test> "
@@ -495,9 +599,9 @@ def predict_files_batch():
                 all_test_in_text,
             ) = predict_assertion(all_sentences, all_tags)
 
-            logging.debug('File Name ::: ', file_name)
-            logging.info('all_sentences ::: ', all_sentences)
-            logging.info('all_tags ::: ', all_tags)
+            #logging.debug('File Name ::: ', file_name)
+            #logging.info('all_sentences ::: ', all_sentences)
+            #logging.info('all_tags ::: ', all_tags)
 
             # These lists are to collect problem-entity label-wise and display on the UI Table and prepare JSON object
             list_ast_present_entity = []
@@ -518,7 +622,7 @@ def predict_files_batch():
             ##### JSON Object structure #####
             JSON_Obj_dict = {}
             JSON_Obj_dict["file_name"] = file_name
-
+            print("file name :: ", file_name)
             # This string is to format full clinical text and add <tag>, like  <Problem-present> problem-entity </Problem-present>
             output_text_with_classification = ""
 
@@ -691,10 +795,10 @@ def predict_file():
             all_test_in_text,
         ) = predict_assertion(all_sentences, all_tags)
 
-    logging.debug('File Name ::: ', filename)
-    logging.info('all_sentences ::: ', all_sentences)
-    logging.info('all_tags ::: ', all_tags)
-
+    #logging.debug('File Name ::: ', filename)
+    #logging.info('all_sentences ::: ', all_sentences)
+    #logging.info('all_tags ::: ', all_tags)
+    print("file name", filename)
     for (
         sentence,
         tags,
@@ -787,8 +891,8 @@ def predict_message():
         all_test_in_text,
     ) = predict_assertion(all_sentences, all_tags)
 
-    logging.debug('all_sentences ::: ', all_sentences)
-    logging.debug('all_tags ::: ', all_tags)
+    #logging.debug('all_sentences ::: ', all_sentences)
+    #logging.debug('all_tags ::: ', all_tags)
 
     for (
         sentence,
