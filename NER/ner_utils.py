@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 from matplotlib.transforms import IdentityTransform
 
 from scipy.special import softmax
-
+import torch
 import torch.nn.functional as F
 
-from NER.processor import *
+#from NER.processor import *
+import processor
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using ", device)

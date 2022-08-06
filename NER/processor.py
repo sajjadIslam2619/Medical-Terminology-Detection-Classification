@@ -1,6 +1,7 @@
 import pandas as pd
 import torch
-import NER.config as config
+#import NER.config as config
+import config
 
 tag2idx={'B-problem': 0,
         'B-test': 1,
@@ -84,7 +85,7 @@ def create_query(sentence, tokenizer):
     # word_list = [token.text for token in sentence.tokens]
     for word in sentence:
         temp_token.extend(tokenizer.tokenize(word))
-    temp_token = temp_token[:64 - 1]
+    temp_token = temp_token[:128 - 1]
     temp_token.append('[SEP]')
     input_id = tokenizer.convert_tokens_to_ids(temp_token)
     padding_len = config.MAX_LEN - len(input_id)
@@ -97,7 +98,7 @@ def create_query(sentence, tokenizer):
 
 def main():
     
-    data_path_train = "./Data/processed/merged/train.tsv"
+    data_path_train = "../Data/processed/merged/train.tsv"
     train_data = pd.read_csv(data_path_train, sep="\t").astype(str)
     s, l = get_sentence_label(train_data)
     

@@ -6,31 +6,31 @@ import subprocess
 import torch
 
 
-MAX_LEN = 64
+MAX_LEN = 128
 BATCH_NUM = 32
 EPOCH = 10
 FULL_FINETUNING = True # True: fine tuning all the layers  False: only fine tuning the classifier layers
 LEARNING_RATE = 3e-5
 MODEL_NAME = 'Bio_ClinicalBERT'
 MODEL_ADDRESS = 'emilyalsentzer/Bio_ClinicalBERT'
-NER_MODEL_SAVED_DIR = './trained_models/NER'
+NER_MODEL_SAVED_DIR = '../trained_models/NER'
 
 RAW_TRAIN_DIRS = {
-    'beth': './Data/raw/concept_assertion_relation_training_data/beth',
-    'partners': './Data/raw/concept_assertion_relation_training_data/partners',
+    'beth': '../Data/raw/concept_assertion_relation_training_data/beth',
+    'partners': '../Data/raw/concept_assertion_relation_training_data/partners',
 }
-TEST_DIR = './Data/raw/reference_standard_for_test_data'
-TEST_CONCEPT_PATH = './Data/raw/reference_standard_for_test_data/concepts'
-TEST_TEXT_PATH = './Data/raw/test_data'
+TEST_DIR = '../Data/raw/reference_standard_for_test_data'
+TEST_CONCEPT_PATH = '../Data/raw/reference_standard_for_test_data/concepts'
+TEST_TEXT_PATH = '../Data/raw/test_data'
 
 
-DATA_SAVED_DIR = './Data/processed/merged/'
-INDIVIDUAL_TEST = './Data/processed/test/'
+DATA_SAVED_DIR = '../Data/processed/merged/'
+INDIVIDUAL_TEST = '../Data/processed/test/'
 OUT_FILES = {
     'merged_train': os.path.join(DATA_SAVED_DIR, 'train.tsv'),
     'merged_dev':   os.path.join(DATA_SAVED_DIR, 'dev.tsv'),
     'merged_test':  os.path.join(DATA_SAVED_DIR, 'test.tsv'),
-    'label': './Data/label_vocab.txt'
+    'label': '../Data/label_vocab.txt'
 }
 
 data_path_train = OUT_FILES['merged_train']

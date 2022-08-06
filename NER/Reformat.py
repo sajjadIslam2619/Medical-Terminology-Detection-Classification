@@ -1,7 +1,8 @@
 import os, re
 import numpy as np
 import pandas as pd
-from ner_utils import config
+#from ner_utils import config
+import config
 
 np.random.seed(1)
 

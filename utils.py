@@ -1,4 +1,5 @@
-
+import sys
+sys.path.append('NER')
 from NER.processor import *
 from NER.ner_utils import *
 from NER import config
@@ -19,7 +20,7 @@ def load_ner_model():
 
 def load_assertion_model():
     # no of classifier: present, not-present
-    num_labels = 3
+    num_labels = 6
     MODEL_CLASSES = {
         'bert': (AutoConfig, BertForSequenceClassification, AutoTokenizer),
     }

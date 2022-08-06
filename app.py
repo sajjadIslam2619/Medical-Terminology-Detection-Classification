@@ -9,6 +9,8 @@ import os
 import random
 from werkzeug.utils import secure_filename
 import copy
+import sys
+sys.path.append('NER')
 from NER.processor import *
 from NER.ner_utils import *
 from NER import config
