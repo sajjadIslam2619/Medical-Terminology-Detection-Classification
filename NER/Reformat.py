@@ -2,7 +2,7 @@ import os, re
 import numpy as np
 import pandas as pd
 #from ner_utils import config
-import config
+import ner_config as config
 
 np.random.seed(1)
 

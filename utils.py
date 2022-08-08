@@ -1,8 +1,7 @@
 import sys
 sys.path.append('NER')
-from NER.processor import *
-from NER.ner_utils import *
-from NER import config
+from Examples.data_processor import *
+from Examples.ner_utils import *
 import copy
 from transformers import BertForTokenClassification, BertTokenizer
 from transformers import AutoConfig, AutoTokenizer, BertForSequenceClassification
