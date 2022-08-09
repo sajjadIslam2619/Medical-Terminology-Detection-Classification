@@ -11,9 +11,9 @@ from werkzeug.utils import secure_filename
 import copy
 import sys
 sys.path.append('NER')
-from Examples.data_processor import *
-from Examples.ner_utils import *
-from NER import ner_config
+from NER.processor import *
+from NER.ner_utils import *
+from NER import config
 from Assertion.assertion_utils import *
 from utils import *
 from seqeval.metrics import classification_report, accuracy_score, f1_score
@@ -964,8 +964,8 @@ def predict_message():
 @app.route("/evaluate", methods=["POST"])
 def evaluate():
     # randomly select a file
-    f_name = random.choice(os.listdir(ner_config.INDIVIDUAL_TEST))
-    f_path = os.path.join(ner_config.INDIVIDUAL_TEST, f_name)
+    f_name = random.choice(os.listdir(config.INDIVIDUAL_TEST))
+    f_path = os.path.join(config.INDIVIDUAL_TEST, f_name)
     dataframe = pd.read_csv(f_path, sep="\t").astype(str)
     sentences, labels = get_sentence_label(dataframe)
     input_ids, input_tags, attention_masks = process_data(

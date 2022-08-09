@@ -1,121 +1,138 @@
-import torch
 import numpy as np
-from sklearn import metrics
-from ner_config import *
 
+from io import BytesIO
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+from matplotlib.transforms import IdentityTransform
 
-def train(epoch, model, data_loader, optimizer, scheduler, device):
-    model.train()
-    losses = 0.0
-    step = 0
-    for i, batch in enumerate(data_loader):
-        optimizer.zero_grad()
-        step += 1
-        contexts, labels, masks = batch
-        contexts = contexts.to(device)
-        labels = labels.to(device)
-        masks = masks.to(device)
-        loss = model(contexts, labels, masks)
-        losses += loss.item()
+from scipy.special import softmax
+import torch
+import torch.nn.functional as F
 
-        loss.backward()
-        optimizer.step()
-        scheduler.step()
+#from NER.processor import *
+import processor
 
-    print("Epoch: {}, Loss:{:.4f}".format(epoch, losses / step))
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Using ", device)
 
-def validate(epoch, model, data_loader, device):
-    model.eval()
-    Y, Y_hat = [], []
-    losses = 0
-    step = 0
-    with torch.no_grad():
-        for i, batch in enumerate(data_loader):
-            step += 1
-            contexts, labels, masks = batch
-            contexts = contexts.to(device)
-            labels = labels.to(device)
-            masks = masks.to(device)
-
-            y_hat = model(contexts, labels, masks, is_test=True)
-            loss = model(contexts, labels, masks)
-
-            losses += loss.item()
-            # Save prediction
-            for j in y_hat:
-                # 1-dimension
-                Y_hat.extend(j)
-            # Save labels
-            masks = (masks == 1)
-            y_orig = torch.masked_select(labels, masks)
-            Y.append(y_orig.cpu())
-    # 2-dimension --> 1-dimension
-    Y = torch.cat(Y, dim=0).numpy()
-    Y_hat = np.array(Y_hat)
-    acc = (Y_hat == Y).mean() * 100
-
-    print("Epoch: {}, Val Loss:{:.4f}, Val Acc:{:.3f}%".format(epoch, losses / step, acc))
-    return model, losses / step, acc
-
-
-def test(model, data, device):
-    model.eval()
-    Y, Y_hat = [], []
-    with torch.no_grad():
-        for i, batch in enumerate(data):
-            contexts, labels, masks = batch
-            contexts = contexts.to(device)
-            labels = labels.to(device)
-            masks = masks.to(device)
-            y_hat = model(contexts, labels, masks, is_test=True)
-            # Save prediction
-            for j in y_hat:
-                Y_hat.extend(j)
-            # Save labels
-            masks = (masks == 1)
-            y_orig = torch.masked_select(labels, masks)
-            Y.append(y_orig.cpu())
-
-    Y = torch.cat(Y, dim=0).numpy()
-    y_true = [idx2tag[i] for i in Y]
-    y_pred = [idx2tag[i] for i in Y_hat]
+def model_evaluation(input_ids, label_ids, input_mask, model):
+    y_true = []
+    y_pred = []
     
-    print(metrics.classification_report(y_true, y_pred, labels=LABELS, digits=4))
+    model.to(device)
+    input_ids = input_ids.to(device)
+    label_ids = label_ids.to(device)
+    input_mask = input_mask.to(device)
+    
+    model.eval()
+    with torch.no_grad():
+        outputs = model(input_ids, token_type_ids=None,
+                        attention_mask=input_mask)
+        # For eval mode, the first result of outputs is logits
+        logits = outputs[0]
+    # Get NER predict result
+    logits = torch.argmax(F.log_softmax(logits, dim=2), dim=2)
+    logits = logits.detach().cpu().numpy()
+    # Get NER true result
+    label_ids = label_ids.to('cpu').numpy()
+    # Only predict the real word, mark=0, will not calculate
+    input_mask = input_mask.to('cpu').numpy()
+    # Compare the valuable predict result
+    for i, mask in enumerate(input_mask):
+        # Real one
+        temp_1 = []
+        # Predict one
+        temp_2 = []
+        for j, m in enumerate(mask):
+            # Mark=0, meaning its a pad word, dont compare
+            if m:
+                if tag2name[label_ids[i][j]] not in ["X", "[CLS]", "[SEP]"]:  # Exclude the X label
+                    # print(tag2name[logits[i][j]])
+                    temp_1.append(tag2name[label_ids[i][j]])
+                    temp_2.append(tag2name[logits[i][j]])
+            else:
+                break
+        y_true.append(temp_1)
+        y_pred.append(temp_2)
+
     return y_true, y_pred
 
-def infer(model, tokenizer, sentence):
-    sentence_ids = tokenizer.convert_tokens_to_ids(sentence)
-    sentence_tensor = torch.LongTensor(sentence_ids).unsqueeze(0).to(DEVICE)
-    mask = (sentence_tensor > 0)
-    y = model(sentence_tensor, None, mask, is_test=True)
-    y = y[0]
-    y_tag = [idx2tag[i] for i in y]
-    y_tag_cn = []
-    for i in range(len(y_tag)):
-        if y_tag[i] in ['<PAD>', '[CLS]', '[SEP]', 'O']:
-            y_tag_cn.append('O')
-        else:
-            y_tag_cn.append(idx2tag[y_tag[i][2:]])
-            
-    y_tag_cn.append('O')
-    result = []
-    i = 0
-    cur_tag = 'None'
-    while i < len(y_tag_cn):
-        if y_tag_cn[i] != 'O':
-            pos_start = i
-            cur_tag = y_tag_cn[i]
-            pos_end = i + 1
-            while pos_end < len(y_tag_cn):
-                if y_tag_cn[pos_end] == cur_tag:
-                    pos_end += 1
-                else:
-                    break
-            result.append([cur_tag, sentence[pos_start:pos_end], pos_start, pos_end])
-            i = pos_end
-        else:
-            i += 1
-    print("The result are shown below:")
-    for entity in result:
-        entity_name = ''.join(entity[1])
-        print(f"entity_name:{entity_name}, entity_type:{entity[0]}, start_pos:{entity[2]}, end_pos:{entity[3]}")
+
+def model_inference(model, input_ids):
+    model.to(device)
+    input_ids = input_ids.to(device)
+    model.eval()
+    with torch.no_grad():
+        outputs = model(input_ids, token_type_ids=None,
+                        attention_mask=None)
+        # For eval mode, the first result of outputs is logits
+        logits = outputs[0]
+    # Get NER predict result
+    predict_results = logits.detach().cpu().numpy()
+    result_arrays_soft = softmax(predict_results[0])
+
+    return np.argmax(result_arrays_soft, axis=-1)
+
+
+def txt_to_pic(txt_path):
+    def text_to_rgba(s, *, dpi, **kwargs):
+        # To convert a text string to an image, we can:
+        # - draw it on an empty and transparent figure;
+        # - save the figure to a temporary buffer using ``bbox_inches="tight",
+        #   pad_inches=0`` which will pick the correct area to save;
+        # - load the buffer using ``plt.imread``.
+        #
+        # (If desired, one can also directly save the image to the filesystem.)
+        fig = Figure(facecolor="none")
+        fig.text(0, 0, s, **kwargs)
+        with BytesIO() as buf:
+            fig.savefig(buf, dpi=dpi, format="png", bbox_inches="tight",
+                        pad_inches=None)
+            buf.seek(0)
+            rgba = plt.imread(buf)
+        return rgba
+
+    fig = plt.figure()
+    rgba1 = text_to_rgba(r"Metrics", color="black", fontsize=10, dpi=100)
+    # rgba2 = text_to_rgba(r"some other string", color="red", fontsize=20, dpi=200)
+    # One can then draw such text images to a Figure using `.Figure.figimage`.
+    fig.figimage(rgba1, 30, 440)
+    # fig.figimage(rgba2, 100, 150)
+
+    # One can also directly draw texts to a figure with positioning
+    # in pixel coordinates by using `.Figure.text` together with
+    # `.transforms.IdentityTransform`.
+    # fig.text(100, 250, r"IQ: $\sigma_i=15$", color="black", fontsize=20,
+    #          transform=IdentityTransform())
+    # fig.text(100, 350, r"some other string", color="red", fontsize=20,
+    #          transform=IdentityTransform())
+
+    with open(txt_path) as f:
+        content = f.readlines()
+
+    for i, c in enumerate(content):
+        c = c.strip('\n')
+        fig.text(50, 400 - i * 25, c, color="black", fontsize=10,
+                 transform=IdentityTransform())
+
+    plt.savefig("static/results.png")
+
+
+def classification_report_to_dataframe(str_representation_of_report):
+    split_string = [x.split(' ') for x in str_representation_of_report.split('\n')]
+    column_names = [' '] + [x for x in split_string[0] if x != '']
+    values = []
+    for table_row in split_string[1:-1]:
+        table_row = [value for value in table_row if value != '']
+        if table_row != []:
+            values.append(table_row)
+    for i in values:
+        for j in range(len(i)):
+            if i[1] == 'avg':
+                i[0:2] = [''.join(i[0:2])]
+            if len(i) == 3:
+                i.insert(1, np.nan)
+                i.insert(2, np.nan)
+            else:
+                pass
+    return pd.DataFrame(data=values, columns=column_names)
