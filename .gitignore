@@ -1,8 +1,9 @@
-
+Data/
 processed/
 raw/
 Bio_ClinicalBERT/
 trained_models/
+Assertion/trained_models/
 __pycache__/
 .idea/
 Examples/
@@ -15,3 +16,4 @@ requirements00.txt
 *~
 .DS_Store
 gradle.properties
+.ipynb_checkpoints/
