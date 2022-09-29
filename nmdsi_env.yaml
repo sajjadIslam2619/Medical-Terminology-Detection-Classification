@@ -1,0 +1,15 @@
+name: py_venv_nmdsi
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - pandas==1.4.2
+  - ipykernel
+  - matplotlib==3.5.1
+  - flask==1.1.2
+  - numpy==1.22.3
+  - seaborn
+  - tensorboard
+  - black
+  - jupyterlab
+prefix: /Users/sajjadislam/opt/anaconda3/envs/py_venv_nmdsi
