@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Result</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<script>
+
+	function highlight_entity(id){
+		var entities_present = document.getElementsByClassName("entity_present");
+		var entities_absent = document.getElementsByClassName("entity_absent");
+		var entities_possible = document.getElementsByClassName("entity_possible");
+		var entities_conditional = document.getElementsByClassName("entity_conditional");
+		var entities_associated = document.getElementsByClassName("entity_associated");
+		var entities_hyphothetical = document.getElementsByClassName("entity_hyphothetical");
+
+		var all_entities = document.getElementsByClassName("entity");
+
+		for (var i = 0 ; i < all_entities.length; i++) {
+			entity = all_entities[i];
+			entity.style.background = "#FFFFFF";
+		}
+
+		if (id == "id_present") {
+			for (var i = 0 ; i < entities_present.length; i++) {
+				entity = entities_present[i];
+				entity.style.background = "#E9E4D4";
+				//var label = document.getElementById("label_present");
+				//label.innerHTML = entities_present.length;
+			}
+		}
+
+		if (id == "id_absent") {
+			for (var i = 0 ; i < entities_absent.length; i++) {
+				entity = entities_absent[i];
+				entity.style.background = "#E9E4D4";
+			}
+		}
+
+		if (id == "id_possible") {
+			
+			for (var i = 0 ; i < entities_possible.length; i++) {
+				entity = entities_possible[i];
+				entity.style.background = "#E9E4D4";
+			}
+		}
+
+		if (id == "id_conditional") {
+			for (var i = 0 ; i < entities_conditional.length; i++) {
+				entity = entities_conditional[i];
+				entity.style.background = "#E9E4D4";
+			}
+		}
+
+		if (id == "id_hyphothetical") {
+			for (var i = 0 ; i < entities_hyphothetical.length; i++) {
+				entity = entities_hyphothetical[i];
+				entity.style.background = "#E9E4D4";
+			}
+		}
+
+		if (id == "id_associated") {
+			for (var i = 0 ; i < entities_associated.length; i++) {
+				entity = entities_associated[i];
+				entity.style.background = "#E9E4D4";
+			}
+		}
+
+	}
+</script>
+
+<style>
+	body {
+		padding: 10px;
+	}
+</style>
+
+<body>
+
+	<header>
+		<div class="container">
+		<div id="brandname">
+			NER App
+		</div>
+		<h2>Detect Clinical Entities</h2>
+	<ul>
+		<li>Problem</li>	
+		<ul>
+			<li id = "id_present" style="color: #ff4000eb; cursor: pointer;" onclick="highlight_entity(this.id)">PRESENT <label id="label_present"></label></li>
+			<li id = "id_absent" style="color: #3AE43F; cursor: pointer;" onclick="highlight_entity(this.id)">ABSENT <label id="label_absent"></label></li>
+			<li id = "id_possible" style="color: #c9c60b; cursor: pointer;" onclick="highlight_entity(this.id)">POSSIBLE <label id="label_possible"></label></li>
+			<li id = "id_conditional" style="color: #984a30eb; cursor: pointer;" onclick="highlight_entity(this.id)">CONDITIONAL <label id="label_conditional"></label></li>
+			<li id = "id_hyphothetical" style="color: #234e25; cursor: pointer;" onclick="highlight_entity(this.id)">HYPHOTHETICAL <label id="label_hyphothetical"></label></li>
+			<li id = "id_associated" style="color: #898726; cursor: pointer;" onclick="highlight_entity(this.id)">ASSOCIATED WITH SOMEONE ELSE <label id="label_associated"></label></li>
+		</ul>
+		<li style="color: #d988dd;">Test</li>
+		<li style="color: blue;">Treatment</li>
+	</ul>
+
+
+	</div>
+	</header>
+	<div><br/></div>
+	<div class="container container mb-3"> 
+		<div class="row"> 
+			<div class="col">
+				<p style="font-size:20;text-align: left;"><b>Results for Clinical Entity</b></p>
+			</div>
+			<div class="col">
+				<a class="btn btn-success" href="{{url_for('download')}}">Download output in .txt</a>
+				<!--<button type="button">Download output in .txt</button>-->
+			</div>
+		 </div>
+	</div>
+	<div><br/></div>
+	<div class="results">
+
+		{% for index_sentence in range(all_sentences|length) -%}
+
+			{% set sentence = all_sentences[index_sentence] %}
+			{% set pred_assertion = assertion_in_sentence[index_sentence] %}
+			{% set assertion_index = all_problems_in_text[index_sentence] %}
+			{% set treatment_index = all_treatment_in_text[index_sentence] %}
+			{% set test_index = all_test_in_text[index_sentence] %}
+			{% set flag_problem = '' %}
+			{% for i in range(1, (sentence|length)-1) -%} 
+
+				{% if i in assertion_index %}
+					{% set index = assertion_index.index(i) %}
+					{% if pred_assertion[index] == 'Present' %} 
+					<!-- + '(PRESENT) ' -->
+						<b class="entity entity_present" style="color: #ff4000eb;">{{sentence[i]}}</b> 
+					{% elif pred_assertion[index] == 'Possible' %}
+					<!-- + '(Possible) ' -->
+						<b class="entity entity_possible" style="color: #c9c60b;">{{sentence[i]}}</b> 
+					{% elif pred_assertion[index] == 'Conditional' %}
+					<!-- + '(Conditional) ' -->
+						<b class="entity entity_conditional" style="color: #984a30eb;">{{sentence[i]}}</b> 
+					{% elif pred_assertion[index] == 'Associated with someone else' %}
+					<!-- + '(Associated with some one else) ' -->
+						<b class="entity entity_associated" style="color: #898726;">{{sentence[i]}}</b> 
+					{% elif pred_assertion[index] == 'Hypothetical' %}
+					<!-- + '(Hyphothetical) ' -->
+						<b class="entity entity_hyphothetical" style="color: #234e25;">{{sentence[i]}}</b> 
+					{% elif pred_assertion[index] == 'Absent' %}
+					<!-- + '(Absent) ' -->
+						<b class="entity entity_absent" style="color: #3AE43F;">{{sentence[i]}}</b> 
+					{%  endif %}
+
+				{% elif i in test_index %}
+					<b style="color: #d988dd;">{{sentence[i] + ' '}}</b> 
+
+				{% elif i in treatment_index %}
+					<b style="color: blue;">{{sentence[i] + ' '}}</b> 
+
+				{% else %}
+					{{sentence[i] + ' '}}	
+
+				{%  endif %}
+
+				
+
+			{%- endfor %}
+		{%- endfor %}
+
+	</div>
+	<div> <br/> <br/> </div>
+	<style>
+		table, th, td {
+		  border: 1px solid black;
+		  border-collapse: collapse;
+		}
+	</style>
+
+	<div class="problem-entity-table"> 
+
+		<table class="table table-hover"> <!--style="width:100%"-->
+			<tr>
+			  <th>Assertion Label</th>
+			  <th>Entity List</th>
+			</tr>
+			<tr>
+			  <td>Present</td>
+			  <td> 
+				{% set list_ast_present_entity = list_ast_present_entity%} 
+				{{', '.join(list_ast_present_entity)}}
+			  </td> 
+			</tr>
+			<tr>
+			  <td>Absent</td>
+			  <td>
+				{% set list_ast_absent_entity = list_ast_absent_entity%} 
+				{{', '.join(list_ast_absent_entity)}}
+			  </td>
+			</tr>
+			<tr>
+			  <td>Possible</td>
+			  <td>
+				{% set list_ast_posssible_entity = list_ast_posssible_entity%} 
+				{{', '.join(list_ast_posssible_entity)}}
+			  </td>
+			</tr>
+			<tr>
+			  <td>Conditional</td>
+			  <td>
+				{% set list_ast_conditional_entity = list_ast_conditional_entity%} 
+				{{', '.join(list_ast_conditional_entity)}}
+			  </td>
+			</tr>
+			<tr>
+			   <td>Hyphothetical</td>
+			   <td>
+				{% set list_ast_hyphothetical_entity = list_ast_hyphothetical_entity%} 
+				{{', '.join(list_ast_hyphothetical_entity)}}
+			   </td>
+			</tr>
+			<tr>
+			   <td>Associated with someone else &nbsp;</td>
+			   <td>
+				{% set list_ast_associated_entity = list_ast_associated_entity%} 
+				{{', '.join(list_ast_associated_entity)}}
+			   </td>
+			</tr>
+		</table>
+
+	</div>
+
+</body>
+</html>

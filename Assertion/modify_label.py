@@ -70,13 +70,13 @@ def main():
     test_df = pd.read_csv(config.OUT_FILES['assertion_label_test'], sep='\t', header=0)
     train_df = pd.read_csv(config.OUT_FILES['assertion_label_train'], sep='\t', header=0)
 
-    print('Train data (Original label counts)')
+    print('Train data (Original label counts): ', len(train_df))
     print(train_df['label'].value_counts())
     print('---------------------------------')
-    print('Dev data (original label counts)')
+    print('Dev data (original label counts): ', len(dev_df))
     print(dev_df['label'].value_counts())
     print('---------------------------------')
-    print('Test data (Original label counts)')
+    print('Test data (Original label counts): ', len(test_df))
     print(test_df['label'].value_counts())
 
     '''
@@ -165,13 +165,13 @@ def main():
     test_df['label'] = test_df['label'].apply(lambda ast_label: replace_ast_6_label(ast_label))
     train_df['label'] = train_df['label'].apply(lambda ast_label: replace_ast_6_label(ast_label))
 
-    print('Train data (modified label counts)') 
+    print('Train data (modified label counts) : ', len(train_df)) 
     print(train_df['label'].value_counts())
     print('---------------------------------')
-    print('Dev data (modified label counts)')
+    print('Dev data (modified label counts): ', len(dev_df))
     print(dev_df['label'].value_counts())
     print('---------------------------------')
-    print('Test data (modified label counts)')
+    print('Test data (modified label counts): ', len(test_df))
     print(test_df['label'].value_counts())
 
     dev_df.to_csv(config.OUT_FILES['assertion_6_label_modified_dev'], sep="\t")
