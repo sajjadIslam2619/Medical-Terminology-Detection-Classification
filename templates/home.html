@@ -28,6 +28,18 @@
     function prediction_files_progress() {
         document.getElementById("prediction_in_progress_id").innerHTML = "Batch prediction process in progress, please wait. It may take a few minutes!!";
     }
+
+    function prediction_single_file_progress() {
+        document.getElementById("single_file_progress_id").innerHTML = "Single file prediction process in progress, please wait...";
+    }
+
+    function text_prediction_progress() {
+        document.getElementById("text_prediction_progress_id").innerHTML = "Text prediction process in progress, please wait...";
+    }
+
+    function model_evaluation_progress() {
+        document.getElementById("model_evaluation_progress_id").innerHTML = "Model evaluation in progress, please wait...";
+    }
 </script>
 
 <body>
@@ -78,8 +90,11 @@
                         <p class="card-text">Select a .txt File to Predict</p>
                         <form action="{{url_for('predict_file')}}" method="POST" enctype=multipart/form-data>
                             <input id="file_input_id" type="file" name="file" class="form-control mb-3">
-                            <button id="file_submit_id" class="btn btn-outline-primary" type="submit" disabled>Predict</button>
+                            <button id="file_submit_id" class="btn btn-outline-primary" type="submit" onclick="prediction_single_file_progress()" disabled>Predict</button>
                         </form>
+                        <div>
+                            <span id="single_file_progress_id" class="text-success"></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -90,10 +105,13 @@
             <div class="card-body">
                 <h5 class="card-title">Text Prediction</h5>
                 <p class="card-text">Enter your text below</p>
-                <form action="{{url_for('predict_message')}}" method="POST">
+                <form action="{{url_for('predict_message')}}" method="POST" onsubmit="text_prediction_progress()">
                     <textarea name="message" rows="5" class="form-control mb-3"></textarea>
                     <button class="btn btn-outline-primary" type="submit">Predict</button>
                 </form>
+                <div>
+                    <span id="text_prediction_progress_id" class="text-success"></span>
+                </div>
             </div>
         </div>
 
@@ -102,9 +120,12 @@
             <div class="card-body">
                 <h5 class="card-title">Evaluate Model</h5>
                 <p class="card-text">The app will randomly pick a clinical text from i2b2 to evaluate the model.</p>
-                <form action="{{ url_for('evaluate')}}" method="POST">
+                <form action="{{ url_for('evaluate')}}" method="POST" onsubmit="model_evaluation_progress()">
                     <button class="btn btn-outline-primary" type="submit">Evaluate</button>
                 </form>
+                <div>
+                    <span id="model_evaluation_progress_id" class="text-success"></span>
+                </div>
             </div>
         </div>
 
